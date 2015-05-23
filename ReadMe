@@ -1,4 +1,6 @@
 if you want to use tmux with vim configuration(256color), plz add below command line in your .bashrc, otherwise color will get wrong!
 	+ alias tmux="TERM=screen-256color-bce tmux"
 
-Remember to do "source .bashrc" to apply new bash configuration
+Remember
+	To do "source .bashrc" to apply new bash configuration
+	install ctags, for example on ubuntu "apt-get install ctags"
