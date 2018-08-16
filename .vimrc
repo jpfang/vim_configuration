@@ -51,7 +51,7 @@ Bundle 'vim-airline/vim-airline-themes'
 Bundle 'fisadev/fisa-vim-colorscheme'
 
 " Better autocompletion
-Bundle 'Shougo/neocomplcache.vim'
+Bundle 'Valloric/YouCompleteMe'
 
 " Git/mercurial/others diff icons on the side of the file lines
 Bundle 'mhinz/vim-signify'
@@ -66,6 +66,15 @@ Bundle 'IndexedSearch'
 
 " XML/HTML tags navigation
 Bundle 'matchit.zip'
+
+" Search and replace
+Bundle 'dkprice/vim-easygrep'
+
+" Multiple editor
+Bundle 'terryma/vim-multiple-cursors'
+
+" Auto cscope
+Bundle 'erig0/cscope_dynamic'
 
 " ============================================================================
 " Install plugins the first time vim runs
@@ -82,13 +91,27 @@ endif
 
 " mapping backqoute to ESC and save key in normal and insert mode
 inoremap ` <ESC>:w<CR>
-nnoremap ` <ESC>:w<CR>
+nnoremap ` :w<CR>
+nnoremap <leader>` :q<CR>
 
 " mapping UI text editor opreate hot key
 map <C-c> y
 map <C-x> d
 map <C-A> <Esc>ggVG
 map <C-v> p
+
+" mapping switch windows position
+nnoremap <tab> <C-w>
+nnoremap <tab><tab><Up> <C-w>K
+nnoremap <tab><tab><Down> <C-w>J
+nnoremap <tab><tab><Left> <C-w>H
+nnoremap <tab><tab><Right> <C-w>L
+
+" mapping adaptive window size
+nnoremap <tab>= <C-w>+
+nnoremap <tab>-	<C-w>-
+nnoremap <tab>. <C-w><
+nnoremap <tab>, <C-w>>
 
 " no vi-compatible
 set nocompatible
@@ -102,6 +125,9 @@ filetype indent on
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
+
+" not wrap code automatically
+set nowrap
 
 " tab length exceptions on some file types
 autocmd FileType html setlocal shiftwidth=4 tabstop=4 softtabstop=4
@@ -290,6 +316,22 @@ highlight SignifySignChange cterm=bold ctermbg=237  ctermfg=227
 let g:airline_theme = 'bubblegum'
 let g:airline#extensions#whitespace#enabled = 0
 
+" East grep ----------------------------
+let g:eregex_default_enable = 1
+let g:EasyGrepFilesToExclude = '*.swp,*~,tags,cscope*'
+
+" Multip Cursor-------------------------
+let g:multi_cursor_next_key = '<C-n>'
+let g:multi_cursor_prev_key = '<C-p>'
+let g:multi_cursor_skip_key = '<C-x>'
+let g:multi_cursor_quit_key = '`'
+
+" Auto cscope---------------------------
+nmap <C-\>l <Plug>CscopeDBInit
+
+" You complete me-----------------------
+" let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
+
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CSCOPE settings for vim
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -381,6 +423,7 @@ if has("cscope")
     "
 
     nmap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+    nmap <C-\>w :scs find s <C-R>=expand("<cword>")<CR><CR>
     nmap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
     nmap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
     nmap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
