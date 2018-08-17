@@ -89,6 +89,9 @@ endif
 " Vim settings and mappings
 " You can edit them as you wish
 
+" let vim can mapping ctrl + s and ctrl + q
+silent !stty -ixon
+
 " mapping backqoute to ESC and save key in normal and insert mode
 inoremap ` <ESC>:w<CR>
 nnoremap ` :w<CR>
@@ -109,9 +112,23 @@ nnoremap <tab><tab><Right> <C-w>L
 
 " mapping adaptive window size
 nnoremap <tab>= <C-w>+
+nnoremap <tab>+ 10<C-w>+
 nnoremap <tab>-	<C-w>-
+nnoremap <tab>_	10<C-w>-
 nnoremap <tab>. <C-w><
+nnoremap <tab>> 20<C-w><
 nnoremap <tab>, <C-w>>
+nnoremap <tab>< 20<C-w>>
+nnoremap <tab>` <C-w>=
+nnoremap <tab>m <C-w>_
+
+" mapping ctags key
+nnoremap <tab><CR> <C-]>
+nnoremap <tab><tab><CR> <C-t>
+
+" mapping esay grep
+nnoremap <C-f> :Grep 
+nnoremap <C-g> :GrepRoot 
 
 " no vi-compatible
 set nocompatible
