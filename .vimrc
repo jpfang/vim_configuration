@@ -122,6 +122,10 @@ nnoremap <tab>< 20<C-w>>
 nnoremap <tab>` <C-w>=
 nnoremap <tab>m <C-w>_
 
+" mapping create windows
+nnoremap <tab>s :split<CR>
+nnoremap <tab>v :vs<CR>
+
 " mapping ctags key
 nnoremap <tab><CR> <C-]>
 nnoremap <tab><tab><CR> <C-t>
