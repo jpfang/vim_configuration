@@ -76,6 +76,15 @@ Bundle 'terryma/vim-multiple-cursors'
 " Auto cscope
 Bundle 'erig0/cscope_dynamic'
 
+Bundle 'ronakg/quickr-cscope.vim'
+Bundle 'ronakg/quickr-preview.vim'
+
+let g:quickr_cscope_keymaps = 0
+let g:quickr_cscope_autoload_db = 0
+let g:quickr_cscope_use_qf_g = 1
+
+let g:quickr_preview_keymaps = 0
+"let g:quickr_preview_position = 'below'
 " ============================================================================
 " Install plugins the first time vim runs
 
@@ -127,8 +136,8 @@ nnoremap <tab>s :split<CR>
 nnoremap <tab>v :vs<CR>
 
 " mapping ctags key
-nnoremap <tab><CR> <C-]>
-nnoremap <tab><tab><CR> <C-t>
+nnoremap w <C-]>
+nnoremap q <C-t>
 
 " mapping esay grep
 nnoremap <C-f> :Grep 
@@ -146,6 +155,7 @@ filetype indent on
 set tabstop=4
 set softtabstop=4
 set shiftwidth=4
+set expandtab
 
 " not wrap code automatically
 set nowrap
@@ -199,6 +209,16 @@ imap <M-Right> <ESC><c-w>l
 imap <M-Left> <ESC><c-w>h
 imap <M-Up> <ESC><c-w>k
 imap <M-Down> <ESC><c-w>j
+
+" walk word
+nnoremap H 10h
+nnoremap L 10l
+nnoremap K 10k
+nnoremap J 10j
+nnoremap n *
+
+" do & undo
+nnoremap r <C-r>
 
 " old autocomplete keyboard shortcut
 imap <C-J> <C-X><C-O>
@@ -303,18 +323,18 @@ let g:ctrlp_custom_ignore = {
 " most of them not documented because I'm not sure how they work
 " (docs aren't good, had to do a lot of trial and error to make 
 " it play nice)
-let g:neocomplcache_enable_at_startup = 1
-let g:neocomplcache_enable_ignore_case = 1
-let g:neocomplcache_enable_smart_case = 1
-let g:neocomplcache_enable_auto_select = 1
-let g:neocomplcache_enable_fuzzy_completion = 1
-let g:neocomplcache_enable_camel_case_completion = 1
-let g:neocomplcache_enable_underbar_completion = 1
-let g:neocomplcache_fuzzy_completion_start_length = 1
-let g:neocomplcache_auto_completion_start_length = 1
-let g:neocomplcache_manual_completion_start_length = 1
-let g:neocomplcache_min_keyword_length = 1
-let g:neocomplcache_min_syntax_length = 1
+"let g:neocomplcache_enable_at_startup = 1
+"let g:neocomplcache_enable_ignore_case = 1
+"let g:neocomplcache_enable_smart_case = 1
+"let g:neocomplcache_enable_auto_select = 1
+"let g:neocomplcache_enable_fuzzy_completion = 1
+"let g:neocomplcache_enable_camel_case_completion = 1
+"let g:neocomplcache_enable_underbar_completion = 1
+"let g:neocomplcache_fuzzy_completion_start_length = 1
+"let g:neocomplcache_auto_completion_start_length = 1
+"let g:neocomplcache_manual_completion_start_length = 1
+"let g:neocomplcache_min_keyword_length = 1
+"let g:neocomplcache_min_syntax_length = 1
 
 " Signify ------------------------------
 
@@ -337,6 +357,9 @@ highlight SignifySignChange cterm=bold ctermbg=237  ctermfg=227
 let g:airline_theme = 'bubblegum'
 let g:airline#extensions#whitespace#enabled = 0
 
+" highlight for cscope result
+highlight ModeMsg ctermfg=green
+
 " East grep ----------------------------
 let g:eregex_default_enable = 1
 let g:EasyGrepFilesToExclude = '*.swp,*~,tags,cscope*'
@@ -348,10 +371,16 @@ let g:multi_cursor_skip_key = '<C-x>'
 let g:multi_cursor_quit_key = '`'
 
 " Auto cscope---------------------------
-nmap <C-\>l <Plug>CscopeDBInit
+nmap sd <Plug>CscopeDBInit
+
+" Set cursor
+set cursorline
+hi cursorLine cterm=NONE ctermbg=NONE ctermfg=NONE
+hi cursorLineNR cterm=NONE ctermbg=234 ctermfg=15
 
 " You complete me-----------------------
-" let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/third_party/ycmd/.ycm_extra_conf.py'
+let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/.ycm_extra_conf.py'
+let g:ycm_filetype_specific_completion_to_disable = {'c': 1, 'cpp': 1}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CSCOPE settings for vim
@@ -390,7 +419,7 @@ if has("cscope")
 
     " check cscope for definition of a symbol before checking ctags: set to 1
     " if you want the reverse search order.
-    set csto=0
+    set csto=1
 
     " add any cscope database in current directory
     if filereadable("mytrace/cscope.out")
@@ -443,13 +472,18 @@ if has("cscope")
     " go back to where you were before the search.
     "
 
-    nmap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
-    nmap <C-\>w :scs find s <C-R>=expand("<cword>")<CR><CR>
+    nmap s<CR> :set cscopequickfix=""<CR> :cs find s <C-R>=expand("<cword>")<CR><CR>
+    "nmap sw <tab>s<tab><tab><Down>:cs find s <C-R>=expand("<cword>")<CR><CR>
+
+    nmap sw :set cscopequickfix=c-,d-,e-,g-,i-,s-,t-<CR><plug>(quickr_cscope_symbols)
+    nmap sv <plug>(quickr_preview)
+    nmap sq <plug>(quickr_preview_qf_close)
+
     nmap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
     nmap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
     nmap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
     nmap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>
-    nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+    nmap sf :set cscopequickfix=""<CR> :cs find f <C-R>=expand("<cfile>")<CR><CR>
     nmap <C-\>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
     nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
 
