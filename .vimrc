@@ -1,3 +1,4 @@
+set encoding=utf-8
 " ============================================================================
 " Vundle initialization
 " Avoid modify this section, unless you are very sure of what you are doing
@@ -75,6 +76,7 @@ Bundle 'terryma/vim-multiple-cursors'
 
 " Auto cscope
 Bundle 'erig0/cscope_dynamic'
+let g:cscopedb_auto_init = 0
 
 Bundle 'ronakg/quickr-cscope.vim'
 Bundle 'ronakg/quickr-preview.vim'
@@ -372,6 +374,7 @@ let g:multi_cursor_quit_key = '`'
 
 " Auto cscope---------------------------
 nmap sd <Plug>CscopeDBInit
+nmap sc :cscope add .cscope.big<CR>
 
 " Set cursor
 set cursorline
@@ -380,7 +383,7 @@ hi cursorLineNR cterm=NONE ctermbg=234 ctermfg=15
 
 " You complete me-----------------------
 let g:ycm_global_ycm_extra_conf = '~/.vim/bundle/YouCompleteMe/.ycm_extra_conf.py'
-let g:ycm_filetype_specific_completion_to_disable = {'c': 1, 'cpp': 1}
+let g:ycm_filetype_specific_completion_to_disable = {'c': 1, 'cpp': 1, 'python': 1}
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " CSCOPE settings for vim
