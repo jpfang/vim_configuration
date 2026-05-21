@@ -1,0 +1,5 @@
+{
+  "clangd.path": "/home/eric.fang/.local/lib/clangd_18.1.3/bin/clangd",
+  "clangd.arguments": ["--background-index", "--clang-tidy"],
+  "inlayHint.enable": false
+}

@@ -234,7 +234,7 @@ set completeopt-=preview
 ca w!! w !sudo tee "%"
 
 " use 256 colors when possible
-if &term =~? 'mlterm\|xterm\|xterm-256\|screen-256'
+if &term =~? 'mlterm\|xterm\|xterm-256\|screen-256\|putty-256color\|nvim'
 	let &t_Co = 256
     colorscheme fisa
 endif
@@ -252,7 +252,9 @@ set backup                        " make backup files
 set backupdir=~/.vim/dirs/backups " where to put backup files
 set undofile                      " persistent undos - undo after you re-open the file
 set undodir=~/.vim/dirs/undos
-set viminfo+=n~/.vim/dirs/viminfo
+if !has('nvim')
+  set viminfo+=n~/.vim/dirs/viminfo
+endif
 
 " create needed directories if they don't exist
 if !isdirectory(&backupdir)
@@ -374,7 +376,8 @@ let g:multi_cursor_quit_key = '`'
 
 " Auto cscope---------------------------
 nmap sd <Plug>CscopeDBInit
-nmap sc :cscope add .cscope.big<CR>
+nmap sa :cscope add .cscope.big<CR>
+nmap cd :! /home/eric.fang/usr/bin/genTraceFile<CR><CR>
 
 " Set cursor
 set cursorline
