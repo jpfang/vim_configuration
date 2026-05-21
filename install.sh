@@ -17,7 +17,7 @@ ln -sf "$SCRIPT_DIR/usr/bin/genClangd" ~/usr/bin/genClangd
 # --- Nvim config ---
 mkdir -p ~/.config/nvim
 ln -sf "$SCRIPT_DIR/.config/nvim/init.vim" ~/.config/nvim/init.vim
-ln -sf "$SCRIPT_DIR/.config/nvim/coc-settings.json" ~/.config/nvim/coc-settings.json
+sed "s|\$HOME|$HOME|g" "$SCRIPT_DIR/.config/nvim/coc-settings.json.template" > ~/.config/nvim/coc-settings.json
 
 # --- Install nvim (AppImage) ---
 if [ ! -f ~/.local/bin/nvim ]; then
