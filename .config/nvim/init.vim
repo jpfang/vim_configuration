@@ -1,4 +1,6 @@
 let g:loaded_youcompleteme = 1
+let g:colorizer_startup = 0
+set timeoutlen=300
 source ~/.vimrc
 
 call plug#begin('~/.local/share/nvim/plugged')
