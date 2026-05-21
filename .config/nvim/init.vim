@@ -27,6 +27,45 @@ nmap [d <Plug>(coc-diagnostic-prev)
 nmap ]d <Plug>(coc-diagnostic-next)
 nmap <leader>fm <Plug>(coc-format)
 
+" F2 cheatsheet (floating window)
+nnoremap <F2> :lua require('cheatsheet').toggle()<CR>
+
+lua << CHEATSHEET
+local cheatsheet = {}
+local win_id = nil
+
+function cheatsheet.toggle()
+  if win_id and vim.api.nvim_win_is_valid(win_id) then
+    vim.api.nvim_win_close(win_id, true)
+    win_id = nil
+    return
+  end
+  local buf = vim.api.nvim_create_buf(false, true)
+  local lines = vim.fn.readfile(vim.fn.expand('~/.config/nvim/cheatsheet.txt'))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.bo[buf].modifiable = false
+  local width = 58
+  local height = #lines
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+  win_id = vim.api.nvim_open_win(buf, true, {
+    relative = 'editor',
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = 'minimal',
+    border = 'rounded',
+  })
+  vim.api.nvim_buf_set_keymap(buf, 'n', '<F2>', ':lua require("cheatsheet").toggle()<CR>', {noremap=true, silent=true})
+  vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':lua require("cheatsheet").toggle()<CR>', {noremap=true, silent=true})
+  vim.api.nvim_buf_set_keymap(buf, 'n', '<Esc>', ':lua require("cheatsheet").toggle()<CR>', {noremap=true, silent=true})
+end
+
+package.loaded['cheatsheet'] = cheatsheet
+return cheatsheet
+CHEATSHEET
+
 " Telescope
 nnoremap <leader>ff :Telescope find_files<CR>
 nnoremap <leader>fg :Telescope live_grep<CR>
