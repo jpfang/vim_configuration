@@ -10,6 +10,10 @@ ln -sf "$SCRIPT_DIR/.vimrc" ~/.vimrc
 ln -sf "$SCRIPT_DIR/.tmux.conf" ~/.tmux.conf
 cp -r "$SCRIPT_DIR/.vim" ~/
 
+# --- genClangd script ---
+mkdir -p ~/usr/bin
+ln -sf "$SCRIPT_DIR/genClangd" ~/usr/bin/genClangd
+
 # --- Nvim config ---
 mkdir -p ~/.config/nvim
 ln -sf "$SCRIPT_DIR/.config/nvim/init.vim" ~/.config/nvim/init.vim
@@ -51,7 +55,7 @@ BASHRC_MARKER="# vim_configuration setup"
 if ! grep -q "$BASHRC_MARKER" ~/.bashrc; then
     echo "" >> ~/.bashrc
     echo "$BASHRC_MARKER" >> ~/.bashrc
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+    echo 'export PATH="$HOME/.local/bin:$HOME/usr/bin:$PATH"' >> ~/.bashrc
     echo "alias vi='TERM=putty-256color nvim'" >> ~/.bashrc
 fi
 

@@ -1,0 +1,13 @@
+#!/bin/bash
+build_path="${1}"
+
+if [ "${build_path}" == "" ]; then
+    echo "Usage: ${0} <build_path>"
+    exit 255
+fi
+
+src_path="$(pwd)"
+cmake -B "${build_path}" \
+    -DCMAKE_TOOLCHAIN_FILE="${src_path}/cmake/platforms/toolchain/linux.cmake" \
+    -DCMAKE_EXPORT_COMPILE_COMMANDS=ON && \
+ln -sf "${build_path}/compile_commands.json" "compile_commands.json"
