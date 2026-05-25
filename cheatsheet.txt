@@ -17,9 +17,7 @@
 ║  ===== Nvim - Edit =====                             ║
 ║  \rn       Rename symbol                             ║
 ║  \fm       Format code                               ║
-║  Tab       Completion: next candidate                ║
-║  Shift-Tab Completion: previous candidate            ║
-║  Enter     Confirm completion                        ║
+║  Tab       Confirm completion                        ║
 ║                                                      ║
 ║  ===== Nvim - Telescope =====                        ║
 ║  \ff       Find file (opens in new tab)              ║

@@ -20,10 +20,8 @@ call plug#end()
 " --- IDE keybindings ---
 autocmd VimEnter * clearjumps
 
-" Tab/Enter for completion
-inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#next(1) : "\<Tab>"
-inoremap <silent><expr> <S-Tab> coc#pum#visible() ? coc#pum#prev(1) : "\<S-Tab>"
-inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
+" Tab for completion
+inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 
 nmap w <Plug>(coc-definition)
 nmap q <C-o>
@@ -88,10 +86,18 @@ local function open_in_new_tab(prompt_bufnr)
   vim.cmd('clearjumps')
 end
 require('telescope').setup{
-  defaults = {
-    mappings = {
-      i = { ["<CR>"] = open_in_new_tab },
-      n = { ["<CR>"] = open_in_new_tab },
+  pickers = {
+    find_files = {
+      mappings = {
+        i = { ["<CR>"] = open_in_new_tab },
+        n = { ["<CR>"] = open_in_new_tab },
+      },
+    },
+    live_grep = {
+      mappings = {
+        i = { ["<CR>"] = open_in_new_tab },
+        n = { ["<CR>"] = open_in_new_tab },
+      },
     },
   },
 }
