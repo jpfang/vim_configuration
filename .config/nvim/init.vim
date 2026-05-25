@@ -257,6 +257,7 @@ local function start_rain()
   if timer then return end
   timer = vim.loop.new_timer()
   timer:start(0, 500, vim.schedule_wrap(function()
+    if not timer then return end
     if vim.bo.filetype ~= 'alpha' then
       timer:stop()
       timer:close()
