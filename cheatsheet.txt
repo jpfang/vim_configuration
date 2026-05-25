@@ -1,63 +1,63 @@
 ╔══════════════════════════════════════════════════════╗
-║                    快捷鍵手冊                        ║
+║                   Cheatsheet                         ║
 ╠══════════════════════════════════════════════════════╣
 ║                                                      ║
 ║  ===== Nvim - Code Navigation =====                  ║
-║  w         跳到定義 (go to definition)               ║
-║  q         跳回上一個位置                            ║
-║  sw        搜尋所有參考 (find references)            ║
-║  gy        跳到型別定義 (type definition)            ║
-║  gi        跳到實作 (implementation)                 ║
-║  K         顯示 hover 文件/錯誤訊息                  ║
+║  w         Go to definition                          ║
+║  q         Jump back                                 ║
+║  sw        Find all references                       ║
+║  gy        Go to type definition                     ║
+║  gi        Go to implementation                      ║
+║  \k        Hover docs / definition info              ║
 ║                                                      ║
 ║  ===== Nvim - Diagnostics =====                      ║
-║  [d        上一個 diagnostic 錯誤                    ║
-║  ]d        下一個 diagnostic 錯誤                    ║
+║  [d        Previous diagnostic                       ║
+║  ]d        Next diagnostic                           ║
 ║                                                      ║
 ║  ===== Nvim - Edit =====                             ║
-║  \rn       重新命名符號 (rename)                     ║
-║  \fm       格式化程式碼 (format)                     ║
-║  Tab       補全選單：下一個候選                      ║
-║  Shift-Tab 補全選單：上一個候選                      ║
-║  Enter     確認補全                                  ║
+║  \rn       Rename symbol                             ║
+║  \fm       Format code                               ║
+║  Tab       Completion: next candidate                ║
+║  Shift-Tab Completion: previous candidate            ║
+║  Enter     Confirm completion                        ║
 ║                                                      ║
 ║  ===== Nvim - Telescope =====                        ║
-║  \ff       模糊搜尋檔案 (開新 tab)                   ║
-║  \fg       全文搜尋 (live grep, 開新 tab)            ║
-║  \fb       搜尋已開啟的 buffer                       ║
-║  \fs       搜尋當前檔案 symbol (outline)             ║
+║  \ff       Find file (opens in new tab)              ║
+║  \fg       Live grep (opens in new tab)              ║
+║  \fb       Search buffers                            ║
+║  \fs       Document symbols (outline)                ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║
-║  Tab v     垂直分割                                  ║
-║  Tab s     水平分割                                  ║
-║  Tab-方向  切換 pane                                 ║
-║  Tab m     最大化當前 pane                           ║
-║  Tab `     恢復等分                                  ║
-║  tn        下一個 tab                                ║
-║  tp        上一個 tab                                ║
+║  Tab v     Vertical split                            ║
+║  Tab s     Horizontal split                          ║
+║  Tab-Arrow Switch pane                               ║
+║  Tab m     Maximize current pane                     ║
+║  Tab `     Restore equal size                        ║
+║  tn        Next tab                                  ║
+║  tp        Previous tab                              ║
 ║                                                      ║
 ║  ===== Nvim - Other =====                            ║
-║  F2        顯示此手冊                                ║
-║  F3        NERDTree 開關                             ║
-║  F4        Tagbar 開關                               ║
-║  `         存檔 (:w)                                 ║
-║  \`        關閉視窗 (:q)                             ║
+║  F2        Show this cheatsheet                      ║
+║  F3        Toggle NvimTree                           ║
+║  F4        Toggle Tagbar                             ║
+║  `         Save (:w)                                 ║
+║  \`        Close window (:q)                         ║
 ║                                                      ║
 ║  ===== Tmux (prefix: Ctrl-l) =====                   ║
-║  Ctrl-l c       新建 window                          ║
-║  Ctrl-l "       水平分割 pane                        ║
-║  Ctrl-l %       垂直分割 pane                        ║
-║  Ctrl-l n       下一個 window                        ║
-║  Ctrl-l p       上一個 window                        ║
-║  Ctrl-l d       detach session                       ║
-║  Ctrl-l x       關閉 pane                            ║
-║  Ctrl-l r       重新載入 tmux.conf                   ║
-║  Ctrl-l m       開啟 mouse                           ║
-║  Ctrl-l M       關閉 mouse                           ║
-║  Alt-Left       上一個 window                        ║
-║  Alt-Right      下一個 window                        ║
-║  Shift-方向     切換 pane                            ║
-║  Alt-Up         進入 copy mode                       ║
-║  Alt-Down       選擇 session                         ║
+║  Ctrl-l c       New window                           ║
+║  Ctrl-l "       Horizontal split pane                ║
+║  Ctrl-l %       Vertical split pane                  ║
+║  Ctrl-l n       Next window                          ║
+║  Ctrl-l p       Previous window                      ║
+║  Ctrl-l d       Detach session                       ║
+║  Ctrl-l x       Close pane                           ║
+║  Ctrl-l r       Reload tmux.conf                     ║
+║  Ctrl-l m       Mouse ON                             ║
+║  Ctrl-l M       Mouse OFF                            ║
+║  Alt-Left       Previous window                      ║
+║  Alt-Right      Next window                          ║
+║  Shift-Arrow    Switch pane                          ║
+║  Alt-Up         Enter copy mode                      ║
+║  Alt-Down       Choose session                       ║
 ║                                                      ║
 ╚══════════════════════════════════════════════════════╝
