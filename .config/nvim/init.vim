@@ -290,3 +290,11 @@ vim.api.nvim_create_autocmd('BufEnter', {
   end,
 })
 ALPHA
+
+" Auto-refresh statusline for LSP progress updates
+lua << REFRESH
+local refresh_timer = vim.loop.new_timer()
+refresh_timer:start(0, 1000, vim.schedule_wrap(function()
+  vim.cmd('redrawstatus')
+end))
+REFRESH
