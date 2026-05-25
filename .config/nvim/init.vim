@@ -230,6 +230,19 @@ dashboard.section.buttons.val = {
   dashboard.button("q", "  Quit",            ":qa<CR>"),
 }
 
+
+
+-- Dashboard green theme
+vim.cmd("hi AlphaHeader ctermfg=113 guifg=#87d787")
+vim.cmd("hi AlphaButtons ctermfg=113 guifg=#87d787")
+vim.cmd("hi AlphaFooter ctermfg=65 guifg=#5f875f")
+dashboard.section.header.opts.hl = "AlphaHeader"
+dashboard.section.footer.opts.hl = "AlphaFooter"
+for _, btn in ipairs(dashboard.section.buttons.val) do
+  btn.opts.hl = "AlphaButtons"
+  btn.opts.hl_shortcut = "AlphaHeader"
+end
+
 dashboard.section.footer.val = {
   "",
   "[ \\ff Find File | \\fg Grep | \\fb Buffers | F2 Cheatsheet | F3 NvimTree ]",
@@ -243,18 +256,17 @@ local timer = nil
 local function start_rain()
   if timer then return end
   timer = vim.loop.new_timer()
-  timer:start(0, 150, vim.schedule_wrap(function()
+  timer:start(0, 500, vim.schedule_wrap(function()
     if vim.bo.filetype ~= 'alpha' then
-      vim.o.guicursor = ''
       timer:stop()
       timer:close()
       timer = nil
       return
     end
     dashboard.section.header.val = build_header()
-    vim.o.guicursor = 'a:CursorHidden'
+    vim.o.lazyredraw = true
     pcall(vim.cmd, 'AlphaRedraw')
-    vim.o.guicursor = 'a:CursorHidden'
+    vim.o.lazyredraw = false
   end))
 end
 
