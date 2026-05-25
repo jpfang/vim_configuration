@@ -221,13 +221,13 @@ end
 dashboard.section.header.val = build_header()
 
 dashboard.section.buttons.val = {
-  dashboard.button("f", "  Find File",       ":Telescope find_files<CR>"),
-  dashboard.button("w", "  Find Word",       ":Telescope live_grep<CR>"),
-  dashboard.button("r", "  Recent Files",    ":Telescope oldfiles<CR>"),
-  dashboard.button("e", "  File Browser",    ":NvimTreeToggle<CR>"),
-  dashboard.button("c", "  Colorschemes",    ":Telescope colorscheme<CR>"),
-  dashboard.button("n", "  New File",        ":enew<CR>"),
-  dashboard.button("q", "  Quit",            ":qa<CR>"),
+  dashboard.button("f", "  Find File",       ":Telescope find_files<CR>"),
+  dashboard.button("w", "  Find Word",       ":Telescope live_grep<CR>"),
+  dashboard.button("r", "  Recent Files",    ":Telescope oldfiles<CR>"),
+  dashboard.button("e", "  File Browser",    ":NvimTreeToggle<CR>"),
+  dashboard.button("c", "  Colorschemes",    ":Telescope colorscheme<CR>"),
+  dashboard.button("n", "  New File",        ":enew<CR>"),
+  dashboard.button("q", "  Quit",            ":qa<CR>"),
 }
 
 dashboard.section.footer.val = {
@@ -239,13 +239,31 @@ dashboard.config.opts.noautocmd = true
 alpha.setup(dashboard.config)
 
 -- Animate matrix rain
-local timer = vim.loop.new_timer()
-timer:start(0, 150, vim.schedule_wrap(function()
-  if vim.bo.filetype ~= 'alpha' then
-    timer:stop()
-    return
-  end
-  dashboard.section.header.val = build_header()
-  pcall(vim.cmd, 'AlphaRedraw')
-end))
+local timer = nil
+local function start_rain()
+  if timer then return end
+  timer = vim.loop.new_timer()
+  timer:start(0, 150, vim.schedule_wrap(function()
+    if vim.bo.filetype ~= 'alpha' then
+      vim.o.guicursor = ''
+      timer:stop()
+      timer:close()
+      timer = nil
+      return
+    end
+    dashboard.section.header.val = build_header()
+    vim.o.guicursor = 'a:CursorHidden'
+    pcall(vim.cmd, 'AlphaRedraw')
+    vim.o.guicursor = 'a:CursorHidden'
+  end))
+end
+
+start_rain()
+vim.api.nvim_create_autocmd('BufEnter', {
+  callback = function()
+    if vim.bo.filetype == 'alpha' then
+      start_rain()
+    end
+  end,
+})
 ALPHA
