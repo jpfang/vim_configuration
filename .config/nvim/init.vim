@@ -130,11 +130,11 @@ vim.api.nvim_create_autocmd("VimEnter", {
   end,
 })
 
--- alpha dashboard
+-- alpha dashboard with matrix rain animation
 local alpha = require('alpha')
 local dashboard = require('alpha.themes.dashboard')
 
-dashboard.section.header.val = {
+local logo = {
   "                                                     ",
   "  ███╗   ██╗██╗   ██╗██╗███╗   ███╗                 ",
   "  ████╗  ██║██║   ██║██║████╗ ████║                 ",
@@ -144,6 +144,81 @@ dashboard.section.header.val = {
   "  ╚═╝  ╚═══╝  ╚═══╝  ╚═╝╚═╝     ╚═╝                 ",
   "                                                     ",
 }
+
+local width = vim.o.columns
+local rain_height = 6
+local chars = {"|", "|", "|", "│", "│", "┃", "╎", ":", ":", "¦"}
+
+local function random_char()
+  return chars[math.random(1, #chars)]
+end
+
+-- Each column has a drop position that falls down
+local drops = {}
+for i = 1, width do
+  drops[i] = math.random(1, rain_height * 2)
+end
+
+local function make_rain_frame()
+  local grid = {}
+  for r = 1, rain_height do
+    grid[r] = {}
+    for c = 1, width do
+      grid[r][c] = " "
+    end
+  end
+  -- Update drops
+  for c = 1, width do
+    local drop = drops[c]
+    -- Draw trail (3 chars above drop position)
+    for t = 0, 2 do
+      local row = drop - t
+      if row >= 1 and row <= rain_height then
+        grid[row][c] = random_char()
+      end
+    end
+    -- Move drop down
+    drops[c] = drops[c] + 1
+    if drops[c] > rain_height + 3 then
+      drops[c] = math.random(-4, 1)
+    end
+  end
+  local lines = {}
+  for r = 1, rain_height do
+    table.insert(lines, table.concat(grid[r]))
+  end
+  return lines
+end
+
+local function build_header()
+  local header = {}
+  local logo_width = vim.fn.strdisplaywidth(logo[2])
+  local pad = math.floor((width - logo_width) / 2)
+  local rain_top = make_rain_frame()
+  for _, l in ipairs(rain_top) do
+    table.insert(header, l)
+  end
+  -- Logo lines with rain filling both sides
+  for _, l in ipairs(logo) do
+    local left_rain = ""
+    local right_rain = ""
+    for i = 1, pad do
+      left_rain = left_rain .. (math.random() < 0.15 and random_char() or " ")
+    end
+    local lw = vim.fn.strdisplaywidth(l)
+    for i = 1, width - pad - lw do
+      right_rain = right_rain .. (math.random() < 0.15 and random_char() or " ")
+    end
+    table.insert(header, left_rain .. l .. right_rain)
+  end
+  local rain_bot = make_rain_frame()
+  for _, l in ipairs(rain_bot) do
+    table.insert(header, l)
+  end
+  return header
+end
+
+dashboard.section.header.val = build_header()
 
 dashboard.section.buttons.val = {
   dashboard.button("f", "  Find File",       ":Telescope find_files<CR>"),
@@ -162,4 +237,15 @@ dashboard.section.footer.val = {
 
 dashboard.config.opts.noautocmd = true
 alpha.setup(dashboard.config)
+
+-- Animate matrix rain
+local timer = vim.loop.new_timer()
+timer:start(0, 150, vim.schedule_wrap(function()
+  if vim.bo.filetype ~= 'alpha' then
+    timer:stop()
+    return
+  end
+  dashboard.section.header.val = build_header()
+  pcall(vim.cmd, 'AlphaRedraw')
+end))
 ALPHA
