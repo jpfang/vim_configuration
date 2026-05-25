@@ -61,12 +61,9 @@ if ! grep -q "$BASHRC_MARKER" ~/.bashrc; then
 fi
 
 echo ""
-echo "=== Done! ==="
+echo "=== Syncing nvim plugins... ==="
+TERM=putty-256color ~/.local/bin/nvim --headless -c 'PlugInstall --sync' -c 'qa' 2>/dev/null
+TERM=putty-256color ~/.local/bin/nvim --headless -c 'CocInstall -sync coc-clangd coc-pyright' -c 'qa' 2>/dev/null
+
 echo ""
-echo "Next steps:"
-echo "  1. source ~/.bashrc"
-echo "  2. vi +PlugInstall +qa"
-echo "  3. vi +'CocInstall coc-clangd coc-pyright'"
-echo ""
-echo "For C++ projects, generate compile_commands.json:"
-echo "  cd ~/Git/work && genClangd <build_path>"
+echo "=== Done! Run: source ~/.bashrc ==="
