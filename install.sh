@@ -58,6 +58,16 @@ if [ ! -f ~/.local/lib/clangd_18.1.3/bin/clangd ]; then
     rm -rf /tmp/clangd_install
 fi
 
+# --- Check ripgrep (needed by Telescope live_grep) ---
+if ! command -v rg &>/dev/null; then
+    echo "WARNING: ripgrep not found. Telescope live_grep requires rg."
+    if [ "$OS" = "Darwin" ]; then
+        echo "  Install with: brew install ripgrep"
+    else
+        echo "  Install with: sudo apt install ripgrep"
+    fi
+fi
+
 # --- Install node (needed by coc.nvim) ---
 if ! command -v node &>/dev/null; then
     echo "WARNING: node.js not found. coc.nvim requires node >= 16."
