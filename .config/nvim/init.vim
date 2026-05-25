@@ -25,7 +25,6 @@ inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 
 nmap w <Plug>(coc-definition)
 nmap q <C-o>
-autocmd TabNew * clearjumps
 nmap sw <Plug>(coc-references)
 nmap gy <Plug>(coc-type-definition)
 nmap gi <Plug>(coc-implementation)
@@ -111,6 +110,12 @@ local function nvim_tree_on_attach(bufnr)
   local api = require('nvim-tree.api')
   api.config.mappings.default_on_attach(bufnr)
   vim.keymap.del('n', '<Tab>', {buffer = bufnr})
+  vim.keymap.set('n', 'q', ':NvimTreeClose<CR>', {buffer = bufnr, noremap = true, silent = true})
+  -- Clear jump list after opening file so q won't jump back to nvim-tree
+  vim.keymap.set('n', '<CR>', function()
+    api.node.open.edit()
+    vim.cmd('clearjumps')
+  end, {buffer = bufnr, noremap = true, silent = true})
 end
 require('nvim-tree').setup({
   view = { width = 30 },
@@ -234,13 +239,18 @@ dashboard.section.buttons.val = {
 
 -- Dashboard green theme
 vim.cmd("hi AlphaHeader ctermfg=113 guifg=#87d787")
-vim.cmd("hi AlphaButtons ctermfg=113 guifg=#87d787")
+vim.cmd("hi AlphaIcon ctermfg=113 guifg=#87d787")
+vim.cmd("hi AlphaText ctermfg=245 guifg=#8a8a8a")
+vim.cmd("hi AlphaShortcut ctermfg=75 guifg=#5fafff")
 vim.cmd("hi AlphaFooter ctermfg=65 guifg=#5f875f")
 dashboard.section.header.opts.hl = "AlphaHeader"
 dashboard.section.footer.opts.hl = "AlphaFooter"
 for _, btn in ipairs(dashboard.section.buttons.val) do
-  btn.opts.hl = "AlphaButtons"
-  btn.opts.hl_shortcut = "AlphaHeader"
+  btn.opts.hl = "AlphaText"
+  btn.opts.hl_shortcut = "AlphaShortcut"
+  btn.opts.shortcut = btn.opts.shortcut or ""
+  -- Icon is first 3 bytes (UTF-8 char) + 2 spaces = 5 bytes
+  btn.opts.hl = {{"AlphaIcon", 0, 5}, {"AlphaText", 5, -1}}
 end
 
 dashboard.section.footer.val = {
