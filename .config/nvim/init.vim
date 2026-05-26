@@ -24,6 +24,8 @@ autocmd VimEnter * clearjumps
 inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 
 nmap w <Plug>(coc-definition)
+nnoremap < :tabp<CR>
+nnoremap > :tabn<CR>
 nmap q <C-o>
 nmap sw <Plug>(coc-references)
 nmap gy <Plug>(coc-type-definition)
