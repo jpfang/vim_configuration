@@ -22,17 +22,18 @@
 ║  ===== Nvim - Telescope =====                        ║
 ║  \ff       Find file (opens in new tab)              ║
 ║  \fg       Live grep (opens in new tab)              ║
+║  v + \fg   Grep with selected text                   ║
 ║  \fb       Search buffers                            ║
 ║  \fs       Document symbols (outline)                ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║
+║  Shift+<   Previous tab                              ║
+║  Shift+>   Next tab                                  ║
 ║  Tab v     Vertical split                            ║
 ║  Tab s     Horizontal split                          ║
 ║  Tab-Arrow Switch pane                               ║
 ║  Tab m     Maximize current pane                     ║
 ║  Tab `     Restore equal size                        ║
-║  tn        Next tab                                  ║
-║  tp        Previous tab                              ║
 ║                                                      ║
 ║  ===== Nvim - Other =====                            ║
 ║  F2        Show this cheatsheet                      ║
