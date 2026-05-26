@@ -217,7 +217,7 @@ local bx, by = random_pos_outside_logo()
 local ball = { x = bx, y = by, dx = 1, dy = 1, speed = 3, tick = 0 }
 -- Cat state
 local cx, cy = random_pos_outside_logo()
-local cat = { x = cx, y = cy, pause = 0, throw_dir = 1, throw_count = 0 }
+local cat = { x = cx, y = cy, pause = 0, throw_dir = 1, throw_count = 0, sleeping = false, idle_ticks = 0 }
 
 local function move_ball()
   -- Ball moves only when tick reaches threshold (lower speed = slower)
@@ -242,12 +242,16 @@ local function move_ball()
   if is_logo(ny, nx) then
     ball.dx = -ball.dx
     ball.dy = -ball.dy
+    -- Add horizontal offset to prevent ball staying directly above/below logo
+    if nx >= logo_left and nx <= logo_right then
+      ball.dx = (nx < logo_left + math.floor((logo_right - logo_left) / 2)) and -1 or 1
+    end
     nx = ball.x + ball.dx
     ny = ball.y + ball.dy
   end
 
   -- Cat catches ball - bounce away from cat and accelerate
-  if math.abs(nx - cat.x) <= 2 and math.abs(ny - cat.y) <= 2 then
+  if not cat.sleeping and math.abs(nx - cat.x) <= 2 and math.abs(ny - cat.y) <= 2 then
     -- Same direction for 3 throws, then random
     cat.throw_count = cat.throw_count + 1
     if cat.throw_count > 3 then
@@ -282,17 +286,36 @@ local function move_cat()
   local nx = cat.x + dx
   local ny = cat.y + dy
 
-  -- Keep cat within drawable bounds (accounting for sprite size)
+  -- Keep within bounds
   nx = math.max(4, math.min(width - 4, nx))
   ny = math.max(3, math.min(field_height - 2, ny))
 
-  if not is_logo(ny, nx) then
-    cat.x = nx
-    cat.y = ny
-  elseif not is_logo(cat.y, nx) then
-    cat.x = nx
-  elseif not is_logo(ny, cat.x) then
-    cat.y = ny
+  -- Check if direct path is blocked by logo
+  local blocked = is_logo(ny, nx) and is_logo(cat.y, nx) and is_logo(ny, cat.x)
+
+  if not blocked then
+    if not is_logo(ny, nx) then
+      cat.x = nx
+      cat.y = ny
+    elseif not is_logo(cat.y, nx) then
+      cat.x = nx
+    elseif not is_logo(ny, cat.x) then
+      cat.y = ny
+    end
+  else
+    -- Navigate around logo: move to nearest side edge
+    local go_left = (cat.x <= logo_left + math.floor((logo_right - logo_left) / 2))
+    local target_x = go_left and (logo_left - 2) or (logo_right + 2)
+    target_x = math.max(4, math.min(width - 4, target_x))
+
+    if cat.x ~= target_x then
+      cat.x = cat.x + (target_x > cat.x and 1 or -1)
+    else
+      -- Reached the side, now move vertically toward ball
+      local new_y = cat.y + dy
+      new_y = math.max(3, math.min(field_height - 2, new_y))
+      cat.y = new_y
+    end
   end
 end
 
@@ -340,13 +363,6 @@ local function build_header()
     end
   end
 
-  -- Place ball (powerline half-circles)
-  local bx, by = ball.x, ball.y
-  if by >= 1 and by <= field_height and bx >= 2 and bx <= width then
-    if bx - 1 >= 1 then grid[by][bx - 1] = "\xee\x82\xb6" end
-    if bx <= width then grid[by][bx] = "\xee\x82\xb4" end
-  end
-
   -- Place cat (7x5)
   local cx, cy = cat.x, cat.y
   local function put(r, c, ch)
@@ -354,88 +370,198 @@ local function build_header()
       grid[r][c] = ch
     end
   end
-  if true then
-    if cat.pause > 0 then
-      -- Throwing pose (direction aware)
-      -- Ears
-      put(cy - 2, cx - 2, "/")
-      put(cy - 2, cx - 1, "\\")
-      put(cy - 2, cx + 1, "/")
-      put(cy - 2, cx + 2, "\\")
-      -- Head (eyes look toward throw direction)
-      if cat.throw_dir > 0 then
-        put(cy - 1, cx - 3, "(")
-        put(cy - 1, cx - 2, " ")
-        put(cy - 1, cx - 1, " ")
-        put(cy - 1, cx, ".")
-        put(cy - 1, cx + 1, ">")
-        put(cy - 1, cx + 2, " ")
-        put(cy - 1, cx + 3, ")")
-        -- Body with right arm up
-        put(cy, cx - 3, "(")
-        put(cy, cx - 2, " ")
-        put(cy, cx - 1, " ")
-        put(cy, cx, " ")
-        put(cy, cx + 1, " ")
-        put(cy, cx + 2, "/")
-        put(cy, cx + 3, ")")
-      else
-        put(cy - 1, cx - 3, "(")
-        put(cy - 1, cx - 2, " ")
-        put(cy - 1, cx - 1, "<")
-        put(cy - 1, cx, ".")
-        put(cy - 1, cx + 1, " ")
-        put(cy - 1, cx + 2, " ")
-        put(cy - 1, cx + 3, ")")
-        -- Body with left arm up
-        put(cy, cx - 3, "(")
-        put(cy, cx - 2, "\\")
-        put(cy, cx - 1, " ")
-        put(cy, cx, " ")
-        put(cy, cx + 1, " ")
-        put(cy, cx + 2, " ")
-        put(cy, cx + 3, ")")
-      end
-      -- Legs
-      put(cy + 1, cx - 3, " ")
-      put(cy + 1, cx - 2, "/")
-      put(cy + 1, cx - 1, "/")
-      put(cy + 1, cx, " ")
-      put(cy + 1, cx + 1, "\\")
-      put(cy + 1, cx + 2, "\\")
-      put(cy + 1, cx + 3, " ")
+
+  local dist = math.abs(ball.x - cat.x) + math.abs(ball.y - cat.y)
+  local pose = "normal"
+  if cat.sleeping then
+    pose = "sleep"
+  elseif cat.pause > 0 then
+    pose = "throw"
+  elseif dist > 20 then
+    pose = "run"
+  elseif dist < 6 then
+    pose = "crouch"
+  end
+
+  if pose == "sleep" then
+    -- Sleeping pose (curled into ball)
+    if cat.idle_ticks % 4 < 2 then
+      put(cy - 2, cx + 2, "z")
+      put(cy - 3, cx + 3, "Z")
     else
-      -- Normal chasing pose
-      -- Ears
-      put(cy - 2, cx - 2, "/")
-      put(cy - 2, cx - 1, "\\")
-      put(cy - 2, cx + 1, "/")
-      put(cy - 2, cx + 2, "\\")
-      -- Head
+      put(cy - 2, cx + 2, "Z")
+      put(cy - 3, cx + 3, "z")
+    end
+    put(cy - 1, cx - 2, "/")
+    put(cy - 1, cx - 1, "\\")
+    put(cy - 1, cx, "_")
+    put(cy - 1, cx + 1, "/")
+    put(cy - 1, cx + 2, "\\")
+    put(cy, cx - 3, "(")
+    put(cy, cx - 2, " ")
+    put(cy, cx - 1, "-")
+    put(cy, cx, ".")
+    put(cy, cx + 1, "-")
+    put(cy, cx + 2, " ")
+    put(cy, cx + 3, ")")
+    put(cy, cx + 4, "~")
+    put(cy, cx + 5, "~")
+    put(cy + 1, cx - 2, "\\")
+    put(cy + 1, cx - 1, "_")
+    put(cy + 1, cx, "_")
+    put(cy + 1, cx + 1, "_")
+    put(cy + 1, cx + 2, "_")
+    put(cy + 1, cx + 3, "/")
+  elseif pose == "throw" then
+    -- Throwing pose (direction aware)
+    put(cy - 2, cx - 2, "/")
+    put(cy - 2, cx - 1, "\\")
+    put(cy - 2, cx + 1, "/")
+    put(cy - 2, cx + 2, "\\")
+    if cat.throw_dir > 0 then
       put(cy - 1, cx - 3, "(")
       put(cy - 1, cx - 2, " ")
-      put(cy - 1, cx - 1, "o")
+      put(cy - 1, cx - 1, " ")
       put(cy - 1, cx, ".")
-      put(cy - 1, cx + 1, "o")
+      put(cy - 1, cx + 1, ">")
       put(cy - 1, cx + 2, " ")
       put(cy - 1, cx + 3, ")")
-      -- Body
       put(cy, cx - 3, "(")
       put(cy, cx - 2, " ")
       put(cy, cx - 1, " ")
       put(cy, cx, " ")
       put(cy, cx + 1, " ")
+      put(cy, cx + 2, "/")
+      put(cy, cx + 3, ")")
+    else
+      put(cy - 1, cx - 3, "(")
+      put(cy - 1, cx - 2, " ")
+      put(cy - 1, cx - 1, "<")
+      put(cy - 1, cx, ".")
+      put(cy - 1, cx + 1, " ")
+      put(cy - 1, cx + 2, " ")
+      put(cy - 1, cx + 3, ")")
+      put(cy, cx - 3, "(")
+      put(cy, cx - 2, "\\")
+      put(cy, cx - 1, " ")
+      put(cy, cx, " ")
+      put(cy, cx + 1, " ")
       put(cy, cx + 2, " ")
       put(cy, cx + 3, ")")
-      -- Legs
-      put(cy + 1, cx - 3, " ")
-      put(cy + 1, cx - 2, "/")
-      put(cy + 1, cx - 1, "/")
-      put(cy + 1, cx, " ")
-      put(cy + 1, cx + 1, "\\")
-      put(cy + 1, cx + 2, "\\")
-      put(cy + 1, cx + 3, " ")
     end
+    put(cy + 1, cx - 2, "/")
+    put(cy + 1, cx - 1, "/")
+    put(cy + 1, cx + 1, "\\")
+    put(cy + 1, cx + 2, "\\")
+  elseif pose == "run" then
+    -- Running pose (same as normal but legs alternate)
+    put(cy - 2, cx - 2, "/")
+    put(cy - 2, cx - 1, "\\")
+    put(cy - 2, cx + 1, "/")
+    put(cy - 2, cx + 2, "\\")
+    put(cy - 1, cx - 3, "(")
+    put(cy - 1, cx - 2, " ")
+    put(cy - 1, cx - 1, "o")
+    put(cy - 1, cx, ".")
+    put(cy - 1, cx + 1, "o")
+    put(cy - 1, cx + 2, " ")
+    put(cy - 1, cx + 3, ")")
+    put(cy, cx - 3, "(")
+    put(cy, cx - 2, " ")
+    put(cy, cx - 1, " ")
+    put(cy, cx, " ")
+    put(cy, cx + 1, " ")
+    put(cy, cx + 2, " ")
+    put(cy, cx + 3, ")")
+    if cat.idle_ticks % 2 == 0 then
+      -- Legs open
+      put(cy + 1, cx - 2, "/")
+      put(cy + 1, cx - 1, " ")
+      put(cy + 1, cx + 1, " ")
+      put(cy + 1, cx + 2, "\\")
+    else
+      -- Legs closed
+      put(cy + 1, cx - 2, "|")
+      put(cy + 1, cx - 1, "|")
+      put(cy + 1, cx + 1, "|")
+      put(cy + 1, cx + 2, "|")
+    end
+  elseif pose == "crouch" then
+    -- Crouching pose (I style, direction aware)
+    local dir = 1
+    if ball.x < cat.x then dir = -1 end
+    if dir > 0 then
+      -- Facing right
+      put(cy - 1, cx + 1, "/")
+      put(cy - 1, cx + 2, "\\")
+      put(cy - 1, cx + 3, ".")
+      put(cy - 1, cx + 4, "/")
+      put(cy - 1, cx + 5, "\\")
+      put(cy, cx - 2, ">")
+      put(cy, cx - 1, "=")
+      put(cy, cx, "(")
+      put(cy, cx + 1, " ")
+      put(cy, cx + 2, "o")
+      put(cy, cx + 3, ".")
+      put(cy, cx + 4, "o")
+      put(cy, cx + 5, " ")
+      put(cy, cx + 6, ")")
+      put(cy + 1, cx + 1, "\"")
+      put(cy + 1, cx + 2, "-")
+      put(cy + 1, cx + 3, "-")
+      put(cy + 1, cx + 4, "\"")
+    else
+      -- Facing left
+      put(cy - 1, cx - 3, "/")
+      put(cy - 1, cx - 2, "\\")
+      put(cy - 1, cx - 1, ".")
+      put(cy - 1, cx, "/")
+      put(cy - 1, cx + 1, "\\")
+      put(cy, cx - 4, "(")
+      put(cy, cx - 3, " ")
+      put(cy, cx - 2, "o")
+      put(cy, cx - 1, ".")
+      put(cy, cx, "o")
+      put(cy, cx + 1, " ")
+      put(cy, cx + 2, ")")
+      put(cy, cx + 3, "=")
+      put(cy, cx + 4, "<")
+      put(cy + 1, cx - 2, "\"")
+      put(cy + 1, cx - 1, "-")
+      put(cy + 1, cx, "-")
+      put(cy + 1, cx + 1, "\"")
+    end
+  else
+    -- Normal chasing pose
+    put(cy - 2, cx - 2, "/")
+    put(cy - 2, cx - 1, "\\")
+    put(cy - 2, cx + 1, "/")
+    put(cy - 2, cx + 2, "\\")
+    put(cy - 1, cx - 3, "(")
+    put(cy - 1, cx - 2, " ")
+    put(cy - 1, cx - 1, "o")
+    put(cy - 1, cx, ".")
+    put(cy - 1, cx + 1, "o")
+    put(cy - 1, cx + 2, " ")
+    put(cy - 1, cx + 3, ")")
+    put(cy, cx - 3, "(")
+    put(cy, cx - 2, " ")
+    put(cy, cx - 1, " ")
+    put(cy, cx, " ")
+    put(cy, cx + 1, " ")
+    put(cy, cx + 2, " ")
+    put(cy, cx + 3, ")")
+    put(cy + 1, cx - 2, "/")
+    put(cy + 1, cx - 1, "/")
+    put(cy + 1, cx + 1, "\\")
+    put(cy + 1, cx + 2, "\\")
+  end
+
+  -- Place ball (powerline half-circles)
+  local bx, by = ball.x, ball.y
+  if by >= 1 and by <= field_height and bx >= 2 and bx <= width then
+    if bx - 1 >= 1 then grid[by][bx - 1] = "\xee\x82\xb6" end
+    if bx <= width then grid[by][bx] = "\xee\x82\xb4" end
   end
 
   local lines = {}
@@ -471,7 +597,6 @@ for _, btn in ipairs(dashboard.section.buttons.val) do
   btn.opts.hl = "AlphaText"
   btn.opts.hl_shortcut = "AlphaShortcut"
   btn.opts.shortcut = btn.opts.shortcut or ""
-  -- Icon is first 3 bytes (UTF-8 char) + 2 spaces = 5 bytes
   btn.opts.hl = {{"AlphaIcon", 0, 5}, {"AlphaText", 5, -1}}
 end
 
@@ -488,7 +613,7 @@ local timer = nil
 local function start_animation()
   if timer then return end
   timer = vim.loop.new_timer()
-  timer:start(0, 300, vim.schedule_wrap(function()
+  timer:start(0, 200, vim.schedule_wrap(function()
     if not timer then return end
     if vim.bo.filetype ~= 'alpha' then
       timer:stop()
@@ -496,14 +621,31 @@ local function start_animation()
       timer = nil
       return
     end
-    move_ball()
-    move_cat()
+    -- Sleep after 1 minute idle (200 ticks * 300ms = 60s)
+    cat.idle_ticks = cat.idle_ticks + 1
+    if cat.idle_ticks > 200 and not cat.sleeping then
+      cat.sleeping = true
+    end
+    if cat.sleeping then
+      move_ball()
+    else
+      move_ball()
+      move_cat()
+    end
     dashboard.section.header.val = build_header()
     vim.o.lazyredraw = true
     pcall(vim.cmd, 'AlphaRedraw')
     vim.o.lazyredraw = false
   end))
 end
+
+-- Wake cat on real key press
+vim.on_key(function(key)
+  if vim.bo.filetype == 'alpha' and cat.sleeping and key ~= '' then
+    cat.sleeping = false
+    cat.idle_ticks = 0
+  end
+end)
 
 start_animation()
 vim.api.nvim_create_autocmd('BufEnter', {
