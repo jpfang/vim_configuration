@@ -28,21 +28,9 @@ vi +'CocInstall coc-clangd coc-pyright'
 | `.config/nvim/coc-settings.json` | clangd/pyright LSP settings |
 | `install.sh` | Auto-install nvim, clangd, vim-plug, symlinks |
 
-### Nvim Keybindings
+### Keybindings
 
-| Key | Action |
-|-----|--------|
-| `w` | Go to definition |
-| `q` | Jump back |
-| `sw` | Find references |
-| `gy` | Type definition |
-| `gi` | Implementation |
-| `K` | Hover docs |
-| `\rn` | Rename symbol |
-| `[d` / `]d` | Prev/next diagnostic |
-| `\f` | Format |
-| `Tab` | Next completion |
-| `Enter` | Confirm completion |
+See [cheatsheet.txt](cheatsheet.txt) for the full list of keybindings (also accessible via `F2` in nvim).
 
 ### Notes
 

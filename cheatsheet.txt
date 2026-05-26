@@ -25,10 +25,12 @@
 ║  v + \fg   Grep with selected text                   ║
 ║  \fb       Search buffers                            ║
 ║  \fs       Document symbols (outline)                ║
+║  Ctrl-u    Preview scroll up                         ║
+║  Ctrl-d    Preview scroll down                       ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║
-║  Shift+<   Previous tab                              ║
-║  Shift+>   Next tab                                  ║
+║  Shift-<   Previous tab                              ║
+║  Shift->   Next tab                                  ║
 ║  Tab v     Vertical split                            ║
 ║  Tab s     Horizontal split                          ║
 ║  Tab-Arrow Switch pane                               ║

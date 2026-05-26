@@ -112,6 +112,16 @@ vim.api.nvim_create_autocmd('User', {
 })
 
 require('telescope').setup{
+  defaults = {
+    layout_strategy = 'vertical',
+    layout_config = {
+      vertical = {
+        preview_cutoff = 0,
+        prompt_position = 'bottom',
+        mirror = false,
+      },
+    },
+  },
   pickers = {
     find_files = {
       mappings = {
