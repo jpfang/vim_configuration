@@ -76,6 +76,7 @@ CHEATSHEET
 " Telescope
 nnoremap <leader>ff :Telescope find_files<CR>
 nnoremap <leader>fg :Telescope live_grep<CR>
+vnoremap <leader>fg "zy:Telescope live_grep default_text=<C-r>z<CR>
 nnoremap <leader>fb :Telescope buffers<CR>
 
 lua << EOF
@@ -109,9 +110,6 @@ vim.api.nvim_create_autocmd('User', {
 })
 
 require('telescope').setup{
-  defaults = {
-    preview = false,
-  },
   pickers = {
     find_files = {
       mappings = {
