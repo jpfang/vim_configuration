@@ -80,11 +80,38 @@ nnoremap <leader>fb :Telescope buffers<CR>
 
 lua << EOF
 local actions = require('telescope.actions')
+local action_state = require('telescope.actions.state')
+
 local function open_in_new_tab(prompt_bufnr)
-  actions.select_tab(prompt_bufnr)
-  vim.cmd('clearjumps')
+  local entry = action_state.get_selected_entry()
+  if not entry then return end
+  local path = entry.path or entry.filename
+  if not path then return end
+  actions.close(prompt_bufnr)
+  vim.schedule(function()
+    -- If current buffer is dashboard or empty, open in same tab
+    if vim.bo.filetype == 'alpha' or vim.fn.bufname() == '' or vim.bo.buftype == 'nofile' then
+      vim.cmd('edit ' .. vim.fn.fnameescape(path))
+    else
+      vim.cmd('tabedit ' .. vim.fn.fnameescape(path))
+    end
+    if entry.lnum then vim.cmd(tostring(entry.lnum)) end
+    vim.cmd('clearjumps')
+  end)
 end
+
+-- Save buffer before telescope opens
+vim.api.nvim_create_autocmd('User', {
+  pattern = 'TelescopeFindPre',
+  callback = function()
+    orig_buf = vim.api.nvim_get_current_buf()
+  end,
+})
+
 require('telescope').setup{
+  defaults = {
+    preview = false,
+  },
   pickers = {
     find_files = {
       mappings = {
