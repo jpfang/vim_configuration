@@ -134,6 +134,18 @@ require('telescope').setup{
         mirror = false,
       },
     },
+    cycle_layout_list = {},
+    scroll_strategy = 'limit',
+    mappings = {
+      i = {
+        ["<C-j>"] = require('telescope.actions').preview_scrolling_down,
+        ["<C-k>"] = require('telescope.actions').preview_scrolling_up,
+      },
+      n = {
+        ["<C-j>"] = require('telescope.actions').preview_scrolling_down,
+        ["<C-k>"] = require('telescope.actions').preview_scrolling_up,
+      },
+    },
   },
   pickers = {
     find_files = {

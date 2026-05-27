@@ -25,8 +25,8 @@
 ║  v + \fg   Grep with selected text                   ║
 ║  \fb       Search buffers                            ║
 ║  \fs       Document symbols (outline)                ║
-║  Ctrl-u    Preview scroll up                         ║
-║  Ctrl-d    Preview scroll down                       ║
+║  Ctrl-j    Telescope preview scroll down (half page)  ║
+║  Ctrl-k    Telescope preview scroll up (half page)   ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║
 ║  Shift-<   Previous tab                              ║
