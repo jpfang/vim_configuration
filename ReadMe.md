@@ -33,6 +33,8 @@ source ~/.bashrc
 | C/C++ | clangd 18.1.3 | coc-clangd |
 | Python | pyright | coc-pyright |
 | Bash/Shell | bash-language-server + shellcheck | coc-sh |
+| TypeScript/JavaScript | tsserver | coc-tsserver |
+| Vue | Volar | coc-volar |
 
 ### Keybindings
 

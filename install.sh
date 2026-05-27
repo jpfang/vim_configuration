@@ -125,7 +125,7 @@ fi
 echo ""
 echo "=== Syncing nvim plugins... ==="
 ~/.local/bin/nvim --headless -c 'PlugInstall --sync' -c 'qa' 2>/dev/null
-~/.local/bin/nvim --headless -c 'CocInstall -sync coc-clangd coc-pyright coc-sh' -c 'qa' 2>/dev/null
+~/.local/bin/nvim --headless -c 'CocInstall -sync coc-clangd coc-pyright coc-sh coc-tsserver coc-volar' -c 'qa' 2>/dev/null
 
 echo ""
 echo "=== Done! Run: source $SHELL_RC ==="
