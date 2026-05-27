@@ -7,8 +7,6 @@ git clone <this-repo> ~/Git/vim_configuration
 cd ~/Git/vim_configuration
 ./install.sh
 source ~/.bashrc
-vi +PlugInstall +qa
-vi +'CocInstall coc-clangd coc-pyright'
 ```
 
 ### Requirements
@@ -26,7 +24,15 @@ vi +'CocInstall coc-clangd coc-pyright'
 | `.tmux.conf` | Tmux config with powerline status bar |
 | `.config/nvim/init.vim` | Nvim-specific config (coc.nvim, IDE keybindings) |
 | `.config/nvim/coc-settings.json` | clangd/pyright LSP settings |
-| `install.sh` | Auto-install nvim, clangd, vim-plug, symlinks |
+| `install.sh` | Auto-install nvim, clangd, shellcheck, vim-plug, coc extensions, symlinks |
+
+### LSP Support
+
+| Language | LSP Server | coc Extension |
+|----------|-----------|---------------|
+| C/C++ | clangd 18.1.3 | coc-clangd |
+| Python | pyright | coc-pyright |
+| Bash/Shell | bash-language-server + shellcheck | coc-sh |
 
 ### Keybindings
 

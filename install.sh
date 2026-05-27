@@ -58,6 +58,20 @@ if [ ! -f ~/.local/lib/clangd_18.1.3/bin/clangd ]; then
     rm -rf /tmp/clangd_install
 fi
 
+# --- Install shellcheck ---
+if ! command -v shellcheck &>/dev/null; then
+    echo "Installing shellcheck 0.10.0..."
+    if [ "$OS" = "Darwin" ]; then
+        curl -fLo /tmp/shellcheck.tar.xz https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.darwin.x86_64.tar.xz
+    else
+        wget -qO /tmp/shellcheck.tar.xz https://github.com/koalaman/shellcheck/releases/download/v0.10.0/shellcheck-v0.10.0.linux.x86_64.tar.xz
+    fi
+    tar -xJf /tmp/shellcheck.tar.xz -C /tmp
+    mkdir -p ~/.local/bin
+    mv /tmp/shellcheck-v0.10.0/shellcheck ~/.local/bin/
+    rm -rf /tmp/shellcheck*
+fi
+
 # --- Check ripgrep (needed by Telescope live_grep) ---
 if ! command -v rg &>/dev/null; then
     echo "WARNING: ripgrep not found. Telescope live_grep requires rg."
@@ -98,7 +112,7 @@ fi
 echo ""
 echo "=== Syncing nvim plugins... ==="
 ~/.local/bin/nvim --headless -c 'PlugInstall --sync' -c 'qa' 2>/dev/null
-~/.local/bin/nvim --headless -c 'CocInstall -sync coc-clangd coc-pyright' -c 'qa' 2>/dev/null
+~/.local/bin/nvim --headless -c 'CocInstall -sync coc-clangd coc-pyright coc-sh' -c 'qa' 2>/dev/null
 
 echo ""
 echo "=== Done! Run: source $SHELL_RC ==="
