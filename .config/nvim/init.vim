@@ -30,7 +30,20 @@ nmap q <C-o>
 nmap sw <Plug>(coc-references)
 nmap gy <Plug>(coc-type-definition)
 nmap gi <Plug>(coc-implementation)
-nmap <leader>k :call CocActionAsync('doHover')<CR>
+lua << HOVER_JUMP
+vim.keymap.set('n', '<leader>d', function()
+  vim.fn.CocActionAsync('doHover')
+  vim.defer_fn(function()
+    vim.fn['coc#float#jump']()
+    local buf = vim.api.nvim_get_current_buf()
+    local close = function()
+      vim.fn['coc#float#close_all']()
+    end
+    vim.keymap.set('n', '<Esc>', close, {buffer = buf, noremap = true, silent = true})
+    vim.keymap.set('n', 'q', close, {buffer = buf, noremap = true, silent = true})
+  end, 200)
+end, {noremap = true, silent = true})
+HOVER_JUMP
 nmap <leader>rn <Plug>(coc-rename)
 nmap [d <Plug>(coc-diagnostic-prev)
 nmap ]d <Plug>(coc-diagnostic-next)

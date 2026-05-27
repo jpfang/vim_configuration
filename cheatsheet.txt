@@ -8,7 +8,7 @@
 ║  sw        Find all references                       ║
 ║  gy        Go to type definition                     ║
 ║  gi        Go to implementation                      ║
-║  \k        Hover docs / definition info              ║
+║  \d        Hover docs (jump into float, Esc/q close) ║
 ║                                                      ║
 ║  ===== Nvim - Diagnostics =====                      ║
 ║  [d        Previous diagnostic                       ║
