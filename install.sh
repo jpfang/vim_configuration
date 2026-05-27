@@ -23,7 +23,7 @@ sed "s|\$HOME|$HOME|g" "$SCRIPT_DIR/.config/nvim/coc-settings.json.template" > ~
 
 # --- Install nvim ---
 if [ ! -f ~/.local/bin/nvim ]; then
-    echo "Installing nvim 0.10.4..."
+    echo "Installing nvim..."
     mkdir -p ~/.local/bin
     if [ "$OS" = "Darwin" ]; then
         curl -fLo /tmp/nvim-macos.tar.gz https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-macos-arm64.tar.gz
@@ -31,7 +31,14 @@ if [ ! -f ~/.local/bin/nvim ]; then
         ln -sf ~/.local/nvim-macos-arm64/bin/nvim ~/.local/bin/nvim
         rm -f /tmp/nvim-macos.tar.gz
     else
-        wget -qO ~/.local/bin/nvim https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.appimage
+        # Check glibc version for compatibility
+        GLIBC_VER=$(ldd --version 2>&1 | head -1 | grep -oP '\d+\.\d+$')
+        if [ "$(echo "$GLIBC_VER < 2.28" | bc)" = "1" ]; then
+            echo "  glibc $GLIBC_VER detected, using nvim 0.9.5"
+            wget -qO ~/.local/bin/nvim https://github.com/neovim/neovim/releases/download/v0.9.5/nvim.appimage
+        else
+            wget -qO ~/.local/bin/nvim https://github.com/neovim/neovim/releases/download/v0.10.4/nvim-linux-x86_64.appimage
+        fi
         chmod +x ~/.local/bin/nvim
     fi
 fi
