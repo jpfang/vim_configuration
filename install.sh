@@ -14,6 +14,7 @@ cp -r "$SCRIPT_DIR/.vim" ~/
 # --- genClangd script ---
 mkdir -p ~/usr/bin
 ln -sf "$SCRIPT_DIR/usr/bin/genClangd" ~/usr/bin/genClangd
+ln -sf "$SCRIPT_DIR/usr/bin/genJsconfig" ~/usr/bin/genJsconfig
 
 # --- Nvim config ---
 mkdir -p ~/.config/nvim
