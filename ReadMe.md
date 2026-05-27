@@ -34,7 +34,7 @@ source ~/.bashrc
 | Python | pyright | coc-pyright |
 | Bash/Shell | bash-language-server + shellcheck | coc-sh |
 | TypeScript/JavaScript | tsserver | coc-tsserver |
-| Vue | Volar | coc-volar |
+| Vue | Volar | @yaegassy/coc-volar |
 
 ### Keybindings
 
