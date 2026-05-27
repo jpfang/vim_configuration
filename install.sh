@@ -72,14 +72,20 @@ if ! command -v shellcheck &>/dev/null; then
     rm -rf /tmp/shellcheck*
 fi
 
-# --- Check ripgrep (needed by Telescope live_grep) ---
+# --- Install ripgrep (needed by Telescope live_grep) ---
 if ! command -v rg &>/dev/null; then
-    echo "WARNING: ripgrep not found. Telescope live_grep requires rg."
+    echo "Installing ripgrep..."
+    mkdir -p ~/.local/bin
     if [ "$OS" = "Darwin" ]; then
-        echo "  Install with: brew install ripgrep"
+        curl -fLo /tmp/rg.tar.gz https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-apple-darwin.tar.gz
+        tar -xzf /tmp/rg.tar.gz -C /tmp
+        mv /tmp/ripgrep-14.1.1-x86_64-apple-darwin/rg ~/.local/bin/
     else
-        echo "  Install with: sudo apt install ripgrep"
+        wget -qO /tmp/rg.tar.gz https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
+        tar -xzf /tmp/rg.tar.gz -C /tmp
+        mv /tmp/ripgrep-14.1.1-x86_64-unknown-linux-musl/rg ~/.local/bin/
     fi
+    rm -rf /tmp/rg.tar.gz /tmp/ripgrep-*
 fi
 
 # --- Install node (needed by coc.nvim) ---
