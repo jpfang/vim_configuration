@@ -1,0 +1,27 @@
+#!/bin/bash
+# Generate jsconfig.json for Vue/JS projects
+
+if [ "$1" == "" ]; then
+    echo "Usage: ${0} <src_dir>"
+    echo "  e.g. genJsconfig src"
+    exit 255
+fi
+
+src_dir="${1}"
+
+cat > jsconfig.json << EOF
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "esnext",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["${src_dir}/*"]
+    }
+  },
+  "include": ["${src_dir}/**/*"],
+  "exclude": ["node_modules"]
+}
+EOF
+
+echo "Generated jsconfig.json (src: ${src_dir})"
