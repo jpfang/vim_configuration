@@ -23,10 +23,32 @@ autocmd VimEnter * clearjumps
 " Tab for completion
 inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 
-nmap w <Plug>(coc-definition)
 nnoremap < :tabp<CR>
 nnoremap > :tabn<CR>
-nmap q <C-o>
+lua << NAVSTACK
+-- Custom navigation stack (push on jump, pop on q)
+_G._nav_stack = {}
+
+-- Push current position before jumping to definition
+local orig_coc_def = vim.fn['CocActionAsync']
+vim.keymap.set('n', 'w', function()
+  table.insert(_G._nav_stack, {
+    buf = vim.api.nvim_get_current_buf(),
+    pos = vim.api.nvim_win_get_cursor(0)
+  })
+  vim.fn.CocActionAsync('jumpDefinition')
+end, {noremap = true, silent = true})
+
+-- Pop: go back to previous position
+vim.keymap.set('n', 'q', function()
+  if #_G._nav_stack == 0 then return end
+  local entry = table.remove(_G._nav_stack)
+  if vim.api.nvim_buf_is_valid(entry.buf) then
+    vim.api.nvim_set_current_buf(entry.buf)
+    vim.api.nvim_win_set_cursor(0, entry.pos)
+  end
+end, {noremap = true, silent = true})
+NAVSTACK
 nmap sw <Plug>(coc-references)
 nmap gy <Plug>(coc-type-definition)
 nmap gi <Plug>(coc-implementation)
