@@ -29,10 +29,18 @@ lua << NAVSTACK
 -- Custom navigation stack (push on jump, pop on q)
 _G._nav_stack = {}
 
+local function get_tab_stack()
+  local tab = vim.api.nvim_get_current_tabpage()
+  if not _G._nav_stack[tab] then
+    _G._nav_stack[tab] = {}
+  end
+  return _G._nav_stack[tab]
+end
+
 -- Push current position before jumping to definition
-local orig_coc_def = vim.fn['CocActionAsync']
 vim.keymap.set('n', 'w', function()
-  table.insert(_G._nav_stack, {
+  local stack = get_tab_stack()
+  table.insert(stack, {
     buf = vim.api.nvim_get_current_buf(),
     pos = vim.api.nvim_win_get_cursor(0)
   })
@@ -41,8 +49,9 @@ end, {noremap = true, silent = true})
 
 -- Pop: go back to previous position
 vim.keymap.set('n', 'q', function()
-  if #_G._nav_stack == 0 then return end
-  local entry = table.remove(_G._nav_stack)
+  local stack = get_tab_stack()
+  if #stack == 0 then return end
+  local entry = table.remove(stack)
   if vim.api.nvim_buf_is_valid(entry.buf) then
     vim.api.nvim_set_current_buf(entry.buf)
     vim.api.nvim_win_set_cursor(0, entry.pos)
@@ -195,9 +204,15 @@ local function nvim_tree_on_attach(bufnr)
   api.config.mappings.default_on_attach(bufnr)
   vim.keymap.del('n', '<Tab>', {buffer = bufnr})
   vim.keymap.set('n', 'q', ':NvimTreeClose<CR>', {buffer = bufnr, noremap = true, silent = true})
-  -- Clear jump list after opening file so q won't jump back to nvim-tree
+  -- Open file in new tab without affecting original tab's jumplist
   vim.keymap.set('n', '<CR>', function()
-    api.node.open.edit()
+    local node = api.tree.get_node_under_cursor()
+    if not node or node.type == 'directory' then
+      api.node.open.edit()
+      return
+    end
+    vim.cmd('NvimTreeClose')
+    vim.cmd('tabnew ' .. vim.fn.fnameescape(node.absolute_path))
     vim.cmd('clearjumps')
   end, {buffer = bufnr, noremap = true, silent = true})
 end
