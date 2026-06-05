@@ -5,6 +5,7 @@
 ║  ===== Nvim - Code Navigation =====                  ║
 ║  w         Go to definition                          ║
 ║  q         Jump back                                 ║
+║  ss        Show nav stack (with preview)             ║
 ║  sw        Find all references                       ║
 ║  gy        Go to type definition                     ║
 ║  gi        Go to implementation                      ║
@@ -24,8 +25,9 @@
 ║  \fg       Live grep (opens in new tab)              ║
 ║  v + \fg   Grep with selected text                   ║
 ║  \fb       Search buffers                            ║
+║  \fr       Recent files                              ║
 ║  \fs       Document symbols (outline)                ║
-║  Ctrl-j    Telescope preview scroll down (half page)  ║
+║  Ctrl-j    Telescope preview scroll down (half page) ║
 ║  Ctrl-k    Telescope preview scroll up (half page)   ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║

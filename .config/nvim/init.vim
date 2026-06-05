@@ -49,13 +49,116 @@ end, {noremap = true, silent = true})
 
 -- Pop: go back to previous position
 vim.keymap.set('n', 'q', function()
+  if vim.wo.winfixbuf then return end
   local stack = get_tab_stack()
   if #stack == 0 then return end
   local entry = table.remove(stack)
-  if vim.api.nvim_buf_is_valid(entry.buf) then
-    vim.api.nvim_set_current_buf(entry.buf)
-    vim.api.nvim_win_set_cursor(0, entry.pos)
+  if not vim.api.nvim_buf_is_valid(entry.buf) then return end
+  vim.api.nvim_set_current_buf(entry.buf)
+  vim.api.nvim_win_set_cursor(0, entry.pos)
+end, {noremap = true, silent = true})
+
+-- Show navigation stack with preview
+vim.keymap.set('n', 'ss', function()
+  local stack = get_tab_stack()
+  if #stack == 0 then
+    print('[nav] stack is empty')
+    return
   end
+  local lines = {}
+  for i = #stack, 1, -1 do
+    local e = stack[i]
+    local name = vim.api.nvim_buf_is_valid(e.buf) and vim.api.nvim_buf_get_name(e.buf) or '[invalid]'
+    table.insert(lines, string.format(' %d  %s:%d', #stack - i + 1, vim.fn.fnamemodify(name, ':~:.'), e.pos[1]))
+  end
+
+  local width = math.floor(vim.o.columns * 0.8)
+  local total_height = math.floor(vim.o.lines * 0.8)
+  local list_height = math.min(#lines, math.floor(total_height * 0.3))
+  local preview_height = total_height - list_height - 2
+  local start_col = math.floor((vim.o.columns - width) / 2)
+  local start_row = math.floor((vim.o.lines - total_height) / 2)
+
+  local preview_buf = vim.api.nvim_create_buf(false, true)
+  local preview_win = vim.api.nvim_open_win(preview_buf, false, {
+    relative = 'editor',
+    width = width,
+    height = preview_height,
+    row = start_row,
+    col = start_col,
+    style = 'minimal',
+    border = 'rounded',
+    title = ' Preview ',
+  })
+
+  local list_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_buf_set_lines(list_buf, 0, -1, false, lines)
+  vim.bo[list_buf].modifiable = false
+
+  local list_win = vim.api.nvim_open_win(list_buf, true, {
+    relative = 'editor',
+    width = width,
+    height = list_height,
+    row = start_row + preview_height + 2,
+    col = start_col,
+    style = 'minimal',
+    border = 'rounded',
+    title = ' Nav Stack ',
+  })
+
+  local function update_preview()
+    local cursor = vim.api.nvim_win_get_cursor(list_win)[1]
+    local idx = #stack - cursor + 1
+    local e = stack[idx]
+    if not e or not vim.api.nvim_buf_is_valid(e.buf) then return end
+    local total = vim.api.nvim_buf_line_count(e.buf)
+    local start = math.max(0, e.pos[1] - math.floor(preview_height / 2))
+    local end_l = math.min(total, start + preview_height)
+    local preview_lines = vim.api.nvim_buf_get_lines(e.buf, start, end_l, false)
+    vim.bo[preview_buf].modifiable = true
+    vim.api.nvim_buf_set_lines(preview_buf, 0, -1, false, preview_lines)
+    vim.bo[preview_buf].modifiable = false
+    local ft = vim.bo[e.buf].filetype
+    if ft and ft ~= '' then
+      vim.bo[preview_buf].filetype = ft
+    end
+    vim.api.nvim_buf_clear_namespace(preview_buf, -1, 0, -1)
+    local hl_line = e.pos[1] - start - 1
+    if hl_line >= 0 and hl_line < #preview_lines then
+      vim.api.nvim_buf_add_highlight(preview_buf, -1, 'Visual', hl_line, 0, -1)
+    end
+  end
+
+  update_preview()
+
+  vim.api.nvim_create_autocmd('CursorMoved', {
+    buffer = list_buf,
+    callback = function()
+      if vim.api.nvim_win_is_valid(preview_win) then update_preview() end
+    end,
+  })
+
+  local function close()
+    if vim.api.nvim_win_is_valid(preview_win) then vim.api.nvim_win_close(preview_win, true) end
+    if vim.api.nvim_win_is_valid(list_win) then vim.api.nvim_win_close(list_win, true) end
+  end
+
+  local function jump()
+    local cursor = vim.api.nvim_win_get_cursor(list_win)[1]
+    local idx = #stack - cursor + 1
+    local e = stack[idx]
+    close()
+    if e and vim.api.nvim_buf_is_valid(e.buf) then
+      vim.api.nvim_set_current_buf(e.buf)
+      vim.api.nvim_win_set_cursor(0, e.pos)
+      for _ = 1, (#stack - idx + 1) do table.remove(stack) end
+    end
+  end
+
+  vim.keymap.set('n', '<CR>', jump, {buffer = list_buf, noremap = true, silent = true})
+  vim.keymap.set('n', 'ss', close, {buffer = list_buf, noremap = true, silent = true})
+  vim.keymap.set('n', 'q', close, {buffer = list_buf, noremap = true, silent = true})
+  vim.keymap.set('n', '<Esc>', close, {buffer = list_buf, noremap = true, silent = true})
 end, {noremap = true, silent = true})
 
 -- Push current position before jumping to references
@@ -133,6 +236,7 @@ nnoremap <leader>ff :Telescope find_files<CR>
 nnoremap <leader>fg :Telescope live_grep<CR>
 vnoremap <leader>fg "zy:Telescope live_grep default_text=<C-r>z<CR>
 nnoremap <leader>fb :Telescope buffers<CR>
+nnoremap <leader>fr :Telescope oldfiles<CR>
 
 lua << EOF
 local actions = require('telescope.actions')
