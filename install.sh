@@ -97,13 +97,20 @@ if ! command -v rg &>/dev/null; then
 fi
 
 # --- Install node (needed by coc.nvim) ---
-if ! command -v node &>/dev/null; then
-    echo "WARNING: node.js not found. coc.nvim requires node >= 16."
+NODE_VER="v18.20.3"
+if [ ! -f ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ]; then
+    echo "Installing Node.js ${NODE_VER}..."
+    mkdir -p ~/.local/lib ~/.local/bin
     if [ "$OS" = "Darwin" ]; then
-        echo "  Install with: brew install node"
+        curl -fLo /tmp/node.tar.xz "https://nodejs.org/dist/${NODE_VER}/node-${NODE_VER}-darwin-arm64.tar.xz"
+        tar -xJf /tmp/node.tar.xz -C ~/.local/lib
+        ln -sf ~/.local/lib/node-${NODE_VER}-darwin-arm64/bin/node ~/.local/bin/node
     else
-        echo "  Install with: sudo apt install nodejs"
+        wget -qO /tmp/node.tar.xz "https://nodejs.org/dist/${NODE_VER}/node-${NODE_VER}-linux-x64.tar.xz"
+        tar -xJf /tmp/node.tar.xz -C ~/.local/lib
+        ln -sf ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ~/.local/bin/node
     fi
+    rm -f /tmp/node.tar.xz
 fi
 
 # --- Setup shell config ---
