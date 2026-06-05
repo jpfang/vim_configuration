@@ -97,8 +97,18 @@ if ! command -v rg &>/dev/null; then
 fi
 
 # --- Install node (needed by coc.nvim) ---
-NODE_VER="v18.20.3"
-if [ ! -f ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ]; then
+NODE_VER="v20.18.0"
+NODE_MIN_MAJOR=20
+NEED_NODE=true
+
+if command -v node &>/dev/null; then
+    SYS_NODE_MAJOR=$(node --version | grep -oP '(?<=v)\d+')
+    if [ "$SYS_NODE_MAJOR" -ge "$NODE_MIN_MAJOR" ]; then
+        NEED_NODE=false
+    fi
+fi
+
+if [ "$NEED_NODE" = true ]; then
     echo "Installing Node.js ${NODE_VER}..."
     mkdir -p ~/.local/lib ~/.local/bin
     if [ "$OS" = "Darwin" ]; then
@@ -106,9 +116,16 @@ if [ ! -f ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ]; then
         tar -xJf /tmp/node.tar.xz -C ~/.local/lib
         ln -sf ~/.local/lib/node-${NODE_VER}-darwin-arm64/bin/node ~/.local/bin/node
     else
-        wget -qO /tmp/node.tar.xz "https://nodejs.org/dist/${NODE_VER}/node-${NODE_VER}-linux-x64.tar.xz"
-        tar -xJf /tmp/node.tar.xz -C ~/.local/lib
-        ln -sf ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ~/.local/bin/node
+        GLIBC_VER=$(ldd --version 2>&1 | head -1 | grep -oP '\d+\.\d+$')
+        if [ "$(echo "$GLIBC_VER < 2.28" | bc)" = "1" ]; then
+            wget -qO /tmp/node.tar.xz "https://unofficial-builds.nodejs.org/download/release/${NODE_VER}/node-${NODE_VER}-linux-x64-glibc-217.tar.xz"
+            tar -xJf /tmp/node.tar.xz -C ~/.local/lib
+            ln -sf ~/.local/lib/node-${NODE_VER}-linux-x64-glibc-217/bin/node ~/.local/bin/node
+        else
+            wget -qO /tmp/node.tar.xz "https://nodejs.org/dist/${NODE_VER}/node-${NODE_VER}-linux-x64.tar.xz"
+            tar -xJf /tmp/node.tar.xz -C ~/.local/lib
+            ln -sf ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ~/.local/bin/node
+        fi
     fi
     rm -f /tmp/node.tar.xz
 fi
