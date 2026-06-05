@@ -57,8 +57,17 @@ vim.keymap.set('n', 'q', function()
     vim.api.nvim_win_set_cursor(0, entry.pos)
   end
 end, {noremap = true, silent = true})
+
+-- Push current position before jumping to references
+vim.keymap.set('n', 'sw', function()
+  local stack = get_tab_stack()
+  table.insert(stack, {
+    buf = vim.api.nvim_get_current_buf(),
+    pos = vim.api.nvim_win_get_cursor(0)
+  })
+  vim.fn.CocActionAsync('jumpReferences')
+end, {noremap = true, silent = true})
 NAVSTACK
-nmap sw <Plug>(coc-references)
 nmap gy <Plug>(coc-type-definition)
 nmap gi <Plug>(coc-implementation)
 lua << HOVER_JUMP
