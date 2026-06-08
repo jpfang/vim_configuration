@@ -54,7 +54,9 @@ vim.keymap.set('n', 'q', function()
   if #stack == 0 then return end
   local entry = table.remove(stack)
   if not vim.api.nvim_buf_is_valid(entry.buf) then return end
-  vim.api.nvim_set_current_buf(entry.buf)
+  if vim.api.nvim_get_current_buf() ~= entry.buf then
+    vim.api.nvim_set_current_buf(entry.buf)
+  end
   vim.api.nvim_win_set_cursor(0, entry.pos)
 end, {noremap = true, silent = true})
 
