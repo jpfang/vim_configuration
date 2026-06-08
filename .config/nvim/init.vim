@@ -89,12 +89,20 @@ local function get_tab_stack()
   return _G._nav_stack[tab]
 end
 
+local function push_if_different(stack, buf, pos)
+  local top = stack[#stack]
+  if top and top.buf == buf and top.pos[1] == pos[1] then
+    return
+  end
+  table.insert(stack, { buf = buf, pos = pos })
+end
+
 -- Push current position before jumping to definition
 vim.keymap.set('n', 'w', function()
   local stack = get_tab_stack()
   local buf = vim.api.nvim_get_current_buf()
   local pos = vim.api.nvim_win_get_cursor(0)
-  table.insert(stack, { buf = buf, pos = pos })
+  push_if_different(stack, buf, pos)
   _G._coc_telescope('definitions', 'Definitions', 'definition')
 end, {noremap = true, silent = true})
 
@@ -241,26 +249,20 @@ vim.keymap.set('n', 'sw', function()
   local pos = vim.api.nvim_win_get_cursor(0)
   if vim.bo.buftype == '' and not vim.wo.winfixbuf then
     local stack = get_tab_stack()
-    table.insert(stack, { buf = buf, pos = pos })
+    push_if_different(stack, buf, pos)
   end
   _G._coc_telescope('references', 'References', 'reference')
 end, {noremap = true, silent = true})
 
 vim.keymap.set('n', 'sd', function()
   local stack = get_tab_stack()
-  table.insert(stack, {
-    buf = vim.api.nvim_get_current_buf(),
-    pos = vim.api.nvim_win_get_cursor(0)
-  })
+  push_if_different(stack, vim.api.nvim_get_current_buf(), vim.api.nvim_win_get_cursor(0))
   _G._coc_telescope('typeDefinitions', 'Type Definitions', 'typeDefinition')
 end, {noremap = true, silent = true})
 
 vim.keymap.set('n', 'si', function()
   local stack = get_tab_stack()
-  table.insert(stack, {
-    buf = vim.api.nvim_get_current_buf(),
-    pos = vim.api.nvim_win_get_cursor(0)
-  })
+  push_if_different(stack, vim.api.nvim_get_current_buf(), vim.api.nvim_win_get_cursor(0))
   _G._coc_telescope('implementations', 'Implementations', 'implementation')
 end, {noremap = true, silent = true})
 NAVSTACK
