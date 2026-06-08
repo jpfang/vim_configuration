@@ -7,8 +7,8 @@
 ║  q         Jump back                                 ║
 ║  ss        Show nav stack (with preview)             ║
 ║  sw        Find all references                       ║
-║  gy        Go to type definition                     ║
-║  gi        Go to implementation                      ║
+║  sd        Go to type definition                     ║
+║  si        Go to implementation                      ║
 ║  \d        Hover docs (jump into float, Esc/q close) ║
 ║                                                      ║
 ║  ===== Nvim - Diagnostics =====                      ║

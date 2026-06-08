@@ -40,11 +40,18 @@ end
 -- Push current position before jumping to definition
 vim.keymap.set('n', 'w', function()
   local stack = get_tab_stack()
-  table.insert(stack, {
-    buf = vim.api.nvim_get_current_buf(),
-    pos = vim.api.nvim_win_get_cursor(0)
-  })
-  vim.fn.CocActionAsync('jumpDefinition')
+  local buf = vim.api.nvim_get_current_buf()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  table.insert(stack, { buf = buf, pos = pos })
+  vim.fn.CocActionAsync('jumpDefinition', function()
+    vim.schedule(function()
+      local new_buf = vim.api.nvim_get_current_buf()
+      local new_pos = vim.api.nvim_win_get_cursor(0)
+      if new_buf == buf and new_pos[1] == pos[1] then
+        table.remove(stack)
+      end
+    end)
+  end)
 end, {noremap = true, silent = true})
 
 -- Pop: go back to previous position
@@ -55,6 +62,26 @@ vim.keymap.set('n', 'q', function()
   if #stack == 0 then return end
   local entry = table.remove(stack)
   if not vim.api.nvim_buf_is_valid(entry.buf) then return end
+  -- Close coc list/preview windows
+  if vim.wo.winfixbuf or bt ~= '' then
+    local cur_win = vim.api.nvim_get_current_win()
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+      if vim.api.nvim_win_is_valid(win) and win ~= cur_win then
+        local wbuf = vim.api.nvim_win_get_buf(win)
+        local wbt = vim.bo[wbuf].buftype
+        if wbt ~= '' or vim.wo[win].winfixbuf then
+          vim.api.nvim_win_close(win, true)
+        end
+      end
+    end
+    -- Close current window too if it's a special window
+    if vim.api.nvim_win_is_valid(cur_win) and (vim.wo[cur_win].winfixbuf or bt ~= '') then
+      local wins = vim.api.nvim_tabpage_list_wins(0)
+      if #wins > 1 then
+        vim.api.nvim_win_close(cur_win, true)
+      end
+    end
+  end
   if vim.api.nvim_get_current_buf() ~= entry.buf then
     vim.api.nvim_set_current_buf(entry.buf)
   end
@@ -166,16 +193,33 @@ end, {noremap = true, silent = true})
 
 -- Push current position before jumping to references
 vim.keymap.set('n', 'sw', function()
+  local buf = vim.api.nvim_get_current_buf()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  if vim.bo.buftype == '' and not vim.wo.winfixbuf then
+    local stack = get_tab_stack()
+    table.insert(stack, { buf = buf, pos = pos })
+  end
+  vim.fn.CocActionAsync('jumpReferences')
+end, {noremap = true, silent = true})
+
+vim.keymap.set('n', 'sd', function()
   local stack = get_tab_stack()
   table.insert(stack, {
     buf = vim.api.nvim_get_current_buf(),
     pos = vim.api.nvim_win_get_cursor(0)
   })
-  vim.fn.CocActionAsync('jumpReferences')
+  vim.fn.CocActionAsync('jumpTypeDefinition')
+end, {noremap = true, silent = true})
+
+vim.keymap.set('n', 'si', function()
+  local stack = get_tab_stack()
+  table.insert(stack, {
+    buf = vim.api.nvim_get_current_buf(),
+    pos = vim.api.nvim_win_get_cursor(0)
+  })
+  vim.fn.CocActionAsync('jumpImplementation')
 end, {noremap = true, silent = true})
 NAVSTACK
-nmap gy <Plug>(coc-type-definition)
-nmap gi <Plug>(coc-implementation)
 lua << HOVER_JUMP
 vim.keymap.set('n', '<leader>d', function()
   vim.fn.CocActionAsync('doHover')
