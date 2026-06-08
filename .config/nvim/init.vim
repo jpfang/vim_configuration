@@ -29,6 +29,58 @@ lua << NAVSTACK
 -- Custom navigation stack (push on jump, pop on q)
 _G._nav_stack = {}
 
+-- Custom entry maker for telescope-coc: show only filename:lnum
+_G._coc_loc_entry_maker = function(entry)
+  local filename = vim.fn.fnamemodify(entry.filename or '', ':~:.')
+  local display = filename .. ':' .. entry.lnum
+  return {
+    value = entry,
+    display = display,
+    ordinal = display,
+    filename = entry.filename,
+    lnum = entry.lnum,
+    col = entry.col,
+  }
+end
+
+-- Telescope picker for coc locations (references, definitions, etc.)
+_G._coc_telescope = function(action, title, provider)
+  if vim.fn.CocHasProvider(provider) == 0 then
+    print('Coc: server does not support ' .. provider)
+    return
+  end
+  vim.fn.CocActionAsync(action, function(err, locs)
+    if err ~= vim.NIL or type(locs) ~= 'table' or vim.tbl_isempty(locs) then return end
+    vim.schedule(function()
+      local items = {}
+      for _, l in ipairs(locs) do
+        if l.targetUri then l.uri = l.targetUri; l.range = l.targetRange end
+        local filename = vim.uri_to_fname(l.uri)
+        items[#items + 1] = {
+          filename = filename,
+          lnum = l.range.start.line + 1,
+          col = l.range.start.character + 1,
+        }
+      end
+      if #items == 1 and action ~= 'references' then
+        vim.cmd('edit ' .. vim.fn.fnameescape(items[1].filename))
+        vim.api.nvim_win_set_cursor(0, {items[1].lnum, items[1].col - 1})
+        return
+      end
+      local conf = require('telescope.config').values
+      require('telescope.pickers').new({}, {
+        prompt_title = title,
+        previewer = conf.qflist_previewer({}),
+        sorter = conf.generic_sorter({}),
+        finder = require('telescope.finders').new_table({
+          results = items,
+          entry_maker = _G._coc_loc_entry_maker,
+        }),
+      }):find()
+    end)
+  end)
+end
+
 local function get_tab_stack()
   local tab = vim.api.nvim_get_current_tabpage()
   if not _G._nav_stack[tab] then
@@ -43,15 +95,7 @@ vim.keymap.set('n', 'w', function()
   local buf = vim.api.nvim_get_current_buf()
   local pos = vim.api.nvim_win_get_cursor(0)
   table.insert(stack, { buf = buf, pos = pos })
-  vim.fn.CocActionAsync('jumpDefinition', function()
-    vim.schedule(function()
-      local new_buf = vim.api.nvim_get_current_buf()
-      local new_pos = vim.api.nvim_win_get_cursor(0)
-      if new_buf == buf and new_pos[1] == pos[1] then
-        table.remove(stack)
-      end
-    end)
-  end)
+  _G._coc_telescope('definitions', 'Definitions', 'definition')
 end, {noremap = true, silent = true})
 
 -- Pop: go back to previous position
@@ -199,7 +243,7 @@ vim.keymap.set('n', 'sw', function()
     local stack = get_tab_stack()
     table.insert(stack, { buf = buf, pos = pos })
   end
-  vim.fn.CocActionAsync('jumpReferences')
+  _G._coc_telescope('references', 'References', 'reference')
 end, {noremap = true, silent = true})
 
 vim.keymap.set('n', 'sd', function()
@@ -208,7 +252,7 @@ vim.keymap.set('n', 'sd', function()
     buf = vim.api.nvim_get_current_buf(),
     pos = vim.api.nvim_win_get_cursor(0)
   })
-  vim.fn.CocActionAsync('jumpTypeDefinition')
+  _G._coc_telescope('typeDefinitions', 'Type Definitions', 'typeDefinition')
 end, {noremap = true, silent = true})
 
 vim.keymap.set('n', 'si', function()
@@ -217,7 +261,7 @@ vim.keymap.set('n', 'si', function()
     buf = vim.api.nvim_get_current_buf(),
     pos = vim.api.nvim_win_get_cursor(0)
   })
-  vim.fn.CocActionAsync('jumpImplementation')
+  _G._coc_telescope('implementations', 'Implementations', 'implementation')
 end, {noremap = true, silent = true})
 NAVSTACK
 lua << HOVER_JUMP
