@@ -17,7 +17,7 @@
 ║                                                      ║
 ║  ===== Nvim - Edit =====                             ║
 ║  \rn       Rename symbol                             ║
-║  \fm       Format code                               ║
+║  \fm       Format code (visual: format selection)    ║
 ║  Tab       Confirm completion                        ║
 ║                                                      ║
 ║  ===== Nvim - Telescope =====                        ║

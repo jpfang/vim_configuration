@@ -49,7 +49,8 @@ end, {noremap = true, silent = true})
 
 -- Pop: go back to previous position
 vim.keymap.set('n', 'q', function()
-  if vim.wo.winfixbuf then return end
+  local bt = vim.bo.buftype
+  if bt == 'quickfix' or bt == 'prompt' then return end
   local stack = get_tab_stack()
   if #stack == 0 then return end
   local entry = table.remove(stack)
@@ -193,6 +194,7 @@ nmap <leader>rn <Plug>(coc-rename)
 nmap [d <Plug>(coc-diagnostic-prev)
 nmap ]d <Plug>(coc-diagnostic-next)
 nmap <leader>fm <Plug>(coc-format)
+vmap <leader>fm <Plug>(coc-format-selected)
 
 " F2 cheatsheet (floating window)
 nnoremap <F2> :lua require('cheatsheet').toggle()<CR>
