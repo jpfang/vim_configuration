@@ -96,35 +96,32 @@ if ! command -v rg &>/dev/null; then
     rm -rf /tmp/rg.tar.gz /tmp/ripgrep-*
 fi
 
-# --- Install node (needed by coc.nvim) ---
+# --- Install node (for coc.nvim only, not in PATH) ---
 NODE_VER="v20.18.0"
-NODE_MIN_MAJOR=20
-NEED_NODE=true
-
-if command -v node &>/dev/null; then
-    SYS_NODE_MAJOR=$(node --version | grep -oP '(?<=v)\d+')
-    if [ "$SYS_NODE_MAJOR" -ge "$NODE_MIN_MAJOR" ]; then
-        NEED_NODE=false
+if [ "$OS" = "Darwin" ]; then
+    NODE_DIR="$HOME/.local/lib/node-${NODE_VER}-darwin-arm64"
+else
+    GLIBC_VER=$(ldd --version 2>&1 | head -1 | grep -oP '\d+\.\d+$')
+    if [ "$(echo "$GLIBC_VER < 2.28" | bc)" = "1" ]; then
+        NODE_DIR="$HOME/.local/lib/node-${NODE_VER}-linux-x64-glibc-217"
+    else
+        NODE_DIR="$HOME/.local/lib/node-${NODE_VER}-linux-x64"
     fi
 fi
 
-if [ "$NEED_NODE" = true ]; then
-    echo "Installing Node.js ${NODE_VER}..."
-    mkdir -p ~/.local/lib ~/.local/bin
+if [ ! -d "$NODE_DIR" ]; then
+    echo "Installing Node.js ${NODE_VER} (for coc.nvim only)..."
+    mkdir -p ~/.local/lib
     if [ "$OS" = "Darwin" ]; then
         curl -fLo /tmp/node.tar.xz "https://nodejs.org/dist/${NODE_VER}/node-${NODE_VER}-darwin-arm64.tar.xz"
         tar -xJf /tmp/node.tar.xz -C ~/.local/lib
-        ln -sf ~/.local/lib/node-${NODE_VER}-darwin-arm64/bin/node ~/.local/bin/node
     else
-        GLIBC_VER=$(ldd --version 2>&1 | head -1 | grep -oP '\d+\.\d+$')
         if [ "$(echo "$GLIBC_VER < 2.28" | bc)" = "1" ]; then
             wget -qO /tmp/node.tar.xz "https://unofficial-builds.nodejs.org/download/release/${NODE_VER}/node-${NODE_VER}-linux-x64-glibc-217.tar.xz"
             tar -xJf /tmp/node.tar.xz -C ~/.local/lib
-            ln -sf ~/.local/lib/node-${NODE_VER}-linux-x64-glibc-217/bin/node ~/.local/bin/node
         else
             wget -qO /tmp/node.tar.xz "https://nodejs.org/dist/${NODE_VER}/node-${NODE_VER}-linux-x64.tar.xz"
             tar -xJf /tmp/node.tar.xz -C ~/.local/lib
-            ln -sf ~/.local/lib/node-${NODE_VER}-linux-x64/bin/node ~/.local/bin/node
         fi
     fi
     rm -f /tmp/node.tar.xz
