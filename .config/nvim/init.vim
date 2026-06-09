@@ -15,6 +15,8 @@ Plug 'nvim-telescope/telescope.nvim', {'tag': '0.1.8'}
 Plug 'goolord/alpha-nvim'
 Plug 'nvim-tree/nvim-tree.lua'
 Plug 'nvim-tree/nvim-web-devicons'
+Plug 'tpope/vim-fugitive'
+Plug 'lewis6991/gitsigns.nvim'
 call plug#end()
 
 " --- IDE keybindings ---
@@ -142,6 +144,11 @@ end, {noremap = true, silent = true})
 
 -- Show navigation stack with preview
 vim.keymap.set('n', 'ss', function()
+  -- skip when blame is open
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == 'fugitiveblame' then return end
+  end
   local stack = get_tab_stack()
   if #stack == 0 then
     print('[nav] stack is empty')
@@ -933,3 +940,68 @@ refresh_timer:start(0, 1000, vim.schedule_wrap(function()
   vim.cmd('redrawstatus')
 end))
 REFRESH
+
+lua << GITSIGNS
+pcall(function()
+  require('gitsigns').setup({
+    current_line_blame = false,
+  })
+  -- \gl Git blame (left panel, q to close)
+  vim.keymap.set('n', '<leader>gl', function()
+    local code_win = vim.api.nvim_get_current_win()
+    vim.cmd('highlight CursorLine cterm=underline ctermbg=NONE')
+    vim.wo[code_win].cursorline = true
+    vim.wo[code_win].cursorbind = true
+    vim.cmd('Git blame')
+    vim.schedule(function()
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        local buf = vim.api.nvim_win_get_buf(win)
+        if vim.bo[buf].filetype == 'fugitiveblame' then
+          vim.wo[win].cursorline = true
+          vim.wo[win].cursorbind = true
+        end
+      end
+    end)
+  end, { silent = true, noremap = true })
+  -- fugitive blame: Enter opens new tab, q closes blame
+  vim.api.nvim_create_autocmd('FileType', {
+    pattern = 'fugitiveblame',
+    callback = function()
+      vim.keymap.set('n', '<CR>', 'O', { buffer = true, remap = true })
+      vim.keymap.set('n', 'q', function()
+        vim.cmd('close')
+        vim.wo.cursorline = false
+        vim.wo.cursorbind = false
+        vim.cmd('highlight CursorLine cterm=NONE ctermbg=NONE')
+      end, { buffer = true, silent = true })
+      vim.keymap.set('n', 'ss', '<Nop>', { buffer = true, silent = true })
+      vim.keymap.set('n', 's', '<Nop>', { buffer = true, silent = true })
+      vim.wo.number = true
+      vim.wo.relativenumber = false
+    end,
+  })
+  -- fugitive commit buffer: q closes tab
+  vim.api.nvim_create_autocmd('BufReadPost', {
+    pattern = 'fugitive://*',
+    callback = function()
+      vim.keymap.set('n', 'q', ':tabc<CR>', { buffer = true, silent = true })
+      vim.keymap.set('n', 'ss', '<Nop>', { buffer = true, silent = true })
+    end,
+  })
+  -- \gd side-by-side diff in new tab
+  vim.keymap.set('n', '<leader>gd', function()
+    vim.cmd('tab split')
+    vim.cmd('Gitsigns diffthis')
+    vim.schedule(function()
+      for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+        vim.wo[win].winfixbuf = false
+        local buf = vim.api.nvim_win_get_buf(win)
+        vim.keymap.set('n', 'q', ':tabc<CR>', { buffer = buf, silent = true })
+      end
+    end)
+  end, { silent = true, noremap = true })
+end)
+GITSIGNS
+
+" cursorline (only enabled during blame)
+set nocursorline

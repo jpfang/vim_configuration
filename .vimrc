@@ -42,7 +42,9 @@ Bundle 'kien/ctrlp.vim'
 Bundle 'fisadev/vim-ctrlp-cmdpalette'
 
 " Git integration
-Bundle 'motemen/git-vim'
+if !has('nvim')
+  Bundle 'motemen/git-vim'
+endif
 
 " Airline themes
 Bundle 'bling/vim-airline'
