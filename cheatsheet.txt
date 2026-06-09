@@ -47,8 +47,9 @@
 ║  \`        Close window (:q)                         ║
 ║                                                      ║
 ║  ===== Nvim - Git =====                              ║
-║  \gl       Git blame (Enter: open commit in tab)     ║
-║  \gd       Side-by-side diff (new tab, q to close)   ║
+║  \gl       Git blame (Enter: diff in tab, \q close)    ║
+║  \gd       Side-by-side diff (new tab, \q to close)   ║
+║  \q        Close current tab                          ║
 ║                                                      ║
 ║  ===== Tmux (prefix: Ctrl-l) =====                   ║
 ║  Ctrl-l c       New window                           ║

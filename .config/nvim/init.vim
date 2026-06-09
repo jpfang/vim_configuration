@@ -144,10 +144,18 @@ end, {noremap = true, silent = true})
 
 -- Show navigation stack with preview
 vim.keymap.set('n', 'ss', function()
-  -- skip when blame is open
+  -- temporarily disable cursorbind to avoid cursor jump
+  local saved_cursorbind = {}
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    local buf = vim.api.nvim_win_get_buf(win)
-    if vim.bo[buf].filetype == 'fugitiveblame' then return end
+    saved_cursorbind[win] = vim.wo[win].cursorbind
+    vim.wo[win].cursorbind = false
+  end
+  local function restore_cursorbind()
+    for win, val in pairs(saved_cursorbind) do
+      if vim.api.nvim_win_is_valid(win) then
+        vim.wo[win].cursorbind = val
+      end
+    end
   end
   local stack = get_tab_stack()
   if #stack == 0 then
@@ -228,8 +236,14 @@ vim.keymap.set('n', 'ss', function()
   })
 
   local function close()
+    local cur_win = vim.api.nvim_get_current_win()
+    local cur_pos = (cur_win ~= list_win and cur_win ~= preview_win) and vim.api.nvim_win_get_cursor(cur_win) or nil
     if vim.api.nvim_win_is_valid(preview_win) then vim.api.nvim_win_close(preview_win, true) end
     if vim.api.nvim_win_is_valid(list_win) then vim.api.nvim_win_close(list_win, true) end
+    if cur_pos and vim.api.nvim_win_is_valid(cur_win) then
+      pcall(vim.api.nvim_win_set_cursor, cur_win, cur_pos)
+    end
+    restore_cursorbind()
   end
 
   local function jump()
@@ -963,11 +977,18 @@ pcall(function()
       end
     end)
   end, { silent = true, noremap = true })
-  -- fugitive blame: Enter opens new tab, q closes blame
+  -- fugitive blame: Enter opens side-by-side diff in new tab, q closes blame
   vim.api.nvim_create_autocmd('FileType', {
     pattern = 'fugitiveblame',
     callback = function()
-      vim.keymap.set('n', '<CR>', 'O', { buffer = true, remap = true })
+      vim.keymap.set('n', '<CR>', function()
+        local line = vim.fn.getline('.')
+        local sha = line:match('^(%x+)')
+        if not sha then return end
+        vim.cmd('wincmd l')
+        vim.cmd('tab split')
+        vim.cmd('Gvdiffsplit ' .. sha)
+      end, { buffer = true, silent = true })
       vim.keymap.set('n', 'q', function()
         vim.cmd('close')
         vim.wo.cursorline = false
@@ -980,14 +1001,6 @@ pcall(function()
       vim.wo.relativenumber = false
     end,
   })
-  -- fugitive commit buffer: q closes tab
-  vim.api.nvim_create_autocmd('BufReadPost', {
-    pattern = 'fugitive://*',
-    callback = function()
-      vim.keymap.set('n', 'q', ':tabc<CR>', { buffer = true, silent = true })
-      vim.keymap.set('n', 'ss', '<Nop>', { buffer = true, silent = true })
-    end,
-  })
   -- \gd side-by-side diff in new tab
   vim.keymap.set('n', '<leader>gd', function()
     vim.cmd('tab split')
@@ -995,10 +1008,14 @@ pcall(function()
     vim.schedule(function()
       for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
         vim.wo[win].winfixbuf = false
-        local buf = vim.api.nvim_win_get_buf(win)
-        vim.keymap.set('n', 'q', ':tabc<CR>', { buffer = buf, silent = true })
       end
     end)
+  end, { silent = true, noremap = true })
+  -- \q close tab
+  vim.keymap.set('n', '<leader>q', function()
+    if #vim.api.nvim_list_tabpages() > 1 then
+      vim.cmd('tabc')
+    end
   end, { silent = true, noremap = true })
 end)
 GITSIGNS
