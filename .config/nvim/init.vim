@@ -8,17 +8,7 @@ let g:NERDTreeHijackNetrw = 0
 source ~/.vimrc
 silent! autocmd! NERDTreeHijackNetrw
 
-let s:node_ver = 'v20.18.0'
-if has('mac')
-  let g:coc_node_path = expand('~/.local/lib/node-' . s:node_ver . '-darwin-arm64/bin/node')
-else
-  let s:glibc_ver = str2float(system("ldd --version 2>&1 | head -1 | grep -oP '\\d+\\.\\d+$'"))
-  if s:glibc_ver < 2.28
-    let g:coc_node_path = expand('~/.local/lib/node-' . s:node_ver . '-linux-x64-glibc-217/bin/node')
-  else
-    let g:coc_node_path = expand('~/.local/lib/node-' . s:node_ver . '-linux-x64/bin/node')
-  endif
-endif
+let g:coc_node_path = trim(system('bash -c "source ~/.nvm/nvm.sh && nvm which 20"'))
 
 call plug#begin('~/.local/share/nvim/plugged')
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
