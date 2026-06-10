@@ -103,6 +103,7 @@ end
 
 -- Push current position before jumping to definition
 vim.keymap.set('n', 'w', function()
+  if vim.bo.filetype == 'fugitiveblame' or vim.bo.filetype == 'NvimTree' or vim.bo.filetype == 'tagbar' or vim.bo.buftype ~= '' then return end
   local stack = get_tab_stack()
   local buf = vim.api.nvim_get_current_buf()
   local pos = vim.api.nvim_win_get_cursor(0)
@@ -114,6 +115,7 @@ end, {noremap = true, silent = true})
 vim.keymap.set('n', 'q', function()
   local bt = vim.bo.buftype
   if bt == 'quickfix' or bt == 'prompt' then return end
+  if vim.bo.filetype == 'tagbar' then vim.cmd('TagbarClose') return end
   local stack = get_tab_stack()
   if #stack == 0 then return end
   local entry = table.remove(stack)
@@ -146,11 +148,15 @@ end, {noremap = true, silent = true})
 
 -- Show navigation stack with preview
 vim.keymap.set('n', 'ss', function()
-  -- temporarily disable cursorbind to avoid cursor jump
+  if vim.bo.buftype ~= '' then return end
+  -- temporarily disable cursorbind to avoid cursor jump (skip blame window)
   local saved_cursorbind = {}
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    saved_cursorbind[win] = vim.wo[win].cursorbind
-    vim.wo[win].cursorbind = false
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype ~= 'fugitiveblame' then
+      saved_cursorbind[win] = vim.wo[win].cursorbind
+      vim.wo[win].cursorbind = false
+    end
   end
   local function restore_cursorbind()
     for win, val in pairs(saved_cursorbind) do
@@ -162,6 +168,7 @@ vim.keymap.set('n', 'ss', function()
   local stack = get_tab_stack()
   if #stack == 0 then
     print('[nav] stack is empty')
+    restore_cursorbind()
     return
   end
   local lines = {}
@@ -292,15 +299,20 @@ NAVSTACK
 lua << HOVER_JUMP
 vim.keymap.set('n', '<leader>d', function()
   vim.fn.CocActionAsync('doHover')
-  vim.defer_fn(function()
-    vim.fn['coc#float#jump']()
-    local buf = vim.api.nvim_get_current_buf()
-    local close = function()
-      vim.fn['coc#float#close_all']()
-    end
-    vim.keymap.set('n', '<Esc>', close, {buffer = buf, noremap = true, silent = true})
-    vim.keymap.set('n', 'q', close, {buffer = buf, noremap = true, silent = true})
-  end, 200)
+  vim.api.nvim_create_autocmd('User', {
+    pattern = 'CocOpenFloat',
+    once = true,
+    callback = function()
+      vim.schedule(function()
+        vim.fn['coc#float#jump']()
+        local buf = vim.api.nvim_get_current_buf()
+        vim.keymap.set('n', '<Esc>', function() vim.fn['coc#float#close_all']() end, {buffer = buf, noremap = true, silent = true})
+        vim.keymap.set('n', 'q', '<Nop>', {buffer = buf, noremap = true, silent = true})
+        vim.keymap.set('n', 'w', '<Nop>', {buffer = buf, noremap = true, silent = true})
+        vim.keymap.set('n', 'ss', '<Nop>', {buffer = buf, noremap = true, silent = true})
+      end)
+    end,
+  })
 end, {noremap = true, silent = true})
 HOVER_JUMP
 nmap <leader>rn <Plug>(coc-rename)
@@ -975,6 +987,25 @@ pcall(function()
         if vim.bo[buf].filetype == 'fugitiveblame' then
           vim.wo[win].cursorline = true
           vim.wo[win].cursorbind = true
+          -- Strip code, keep sha+author+date and append commit message
+          vim.bo[buf].modifiable = true
+          local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
+          local msg_cache = {}
+          for i, line in ipairs(lines) do
+            local annotation = line:match('^(.-%))')
+            if annotation then
+              local sha = line:match('^(%x+)')
+              if sha and not msg_cache[sha] then
+                local msg = vim.fn.system('git log -1 --format=%s ' .. sha):gsub('\n$', '')
+                msg_cache[sha] = msg
+              end
+              lines[i] = annotation .. ' ' .. (msg_cache[sha] or '')
+            end
+          end
+          vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+          vim.bo[buf].modifiable = false
+          vim.bo[buf].modified = false
+          vim.wo[win].wrap = false
         end
       end
     end)
@@ -988,8 +1019,26 @@ pcall(function()
         local sha = line:match('^(%x+)')
         if not sha then return end
         vim.cmd('wincmd l')
-        vim.cmd('tab split')
-        vim.cmd('Gvdiffsplit ' .. sha)
+        local file_dir = vim.fn.expand('%:p:h')
+        local file_name = vim.fn.expand('%:t')
+        local prefix = vim.fn.system('git -C ' .. vim.fn.shellescape(file_dir) .. ' rev-parse --show-prefix'):gsub('\n$', '')
+        local rel_file = prefix .. file_name
+        vim.cmd('tabnew')
+        vim.cmd('lcd ' .. vim.fn.fnameescape(file_dir))
+        vim.cmd('Gedit ' .. sha .. '~1:' .. rel_file)
+        vim.cmd('diffthis')
+        local nop_keys = {'<leader>ff', '<leader>fg', '<leader>fr', '<leader>fb', 'w', 'q', 'ss'}
+        for _, key in ipairs(nop_keys) do
+          vim.keymap.set('n', key, '<Nop>', {buffer = true, silent = true})
+          vim.keymap.set('v', key, '<Nop>', {buffer = true, silent = true})
+        end
+        vim.cmd('rightbelow vnew')
+        vim.cmd('Gedit ' .. sha .. ':' .. rel_file)
+        vim.cmd('diffthis')
+        for _, key in ipairs(nop_keys) do
+          vim.keymap.set('n', key, '<Nop>', {buffer = true, silent = true})
+          vim.keymap.set('v', key, '<Nop>', {buffer = true, silent = true})
+        end
       end, { buffer = true, silent = true })
       vim.keymap.set('n', 'q', function()
         vim.cmd('close')
@@ -999,6 +1048,19 @@ pcall(function()
       end, { buffer = true, silent = true })
       vim.keymap.set('n', 'ss', '<Nop>', { buffer = true, silent = true })
       vim.keymap.set('n', 's', '<Nop>', { buffer = true, silent = true })
+      vim.api.nvim_create_autocmd('BufWinLeave', {
+        buffer = 0,
+        once = true,
+        callback = function()
+          vim.schedule(function()
+            for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+              vim.wo[win].cursorline = false
+              vim.wo[win].cursorbind = false
+            end
+            vim.cmd('highlight CursorLine cterm=NONE ctermbg=NONE')
+          end)
+        end,
+      })
       vim.wo.number = true
       vim.wo.relativenumber = false
     end,
