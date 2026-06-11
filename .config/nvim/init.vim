@@ -24,6 +24,9 @@ call plug#end()
 " --- IDE keybindings ---
 autocmd VimEnter * clearjumps
 
+" Inactive preprocessor regions (#if not defined) show as Comment color
+hi link CocSemInactive Comment
+
 " Tab for completion
 inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 

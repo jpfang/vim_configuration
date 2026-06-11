@@ -2,6 +2,7 @@
   "clangd.path": "$HOME/.local/lib/clangd_18.1.3/bin/clangd",
   "clangd.arguments": ["--background-index", "--clang-tidy"],
   "inlayHint.enable": false,
+  "semanticTokens.enable": true,
   "suggest.enableFloat": false,
   "hover.floatConfig": {
     "border": true,
