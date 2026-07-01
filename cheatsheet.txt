@@ -3,69 +3,69 @@
 ╠══════════════════════════════════════════════════════╣
 ║                                                      ║
 ║  ===== Nvim - Code Navigation =====                  ║
-║  w         Go to definition                          ║
-║  q         Jump back                                 ║
-║  ss        Show nav stack (with preview)             ║
-║  sw        Find all references                       ║
-║  sd        Go to type definition                     ║
-║  si        Go to implementation                      ║
-║  \d        Hover docs (jump into float, Esc/q close) ║
+║  w            Go to definition                       ║
+║  q            Jump back                              ║
+║  ss           Show nav stack (with preview)          ║
+║  sw           Find all references                    ║
+║  sd           Go to type definition                  ║
+║  si           Go to implementation                   ║
+║  \d           Hover docs (Esc to close)              ║
 ║                                                      ║
 ║  ===== Nvim - Diagnostics =====                      ║
-║  [d        Previous diagnostic                       ║
-║  ]d        Next diagnostic                           ║
+║  [d           Previous diagnostic                    ║
+║  ]d           Next diagnostic                        ║
 ║                                                      ║
 ║  ===== Nvim - Edit =====                             ║
-║  \rn       Rename symbol                             ║
-║  \fm       Format code (visual: format selection)    ║
-║  Tab       Confirm completion                        ║
+║  \rn          Rename symbol                          ║
+║  \fm          Format code (visual: selection)        ║
+║  Tab          Confirm completion                     ║
 ║                                                      ║
 ║  ===== Nvim - Telescope =====                        ║
-║  \ff       Find file (opens in new tab)              ║
-║  \fg       Live grep (opens in new tab)              ║
-║  v + \fg   Grep with selected text                   ║
-║  \fb       Search buffers                            ║
-║  \fr       Recent files                              ║
-║  \fs       Document symbols (outline)                ║
-║  Ctrl-j    Telescope preview scroll down (half page) ║
-║  Ctrl-k    Telescope preview scroll up (half page)   ║
+║  \ff          Find file (new tab)                    ║
+║  \fg          Live grep (new tab)                    ║
+║  v \fg        Grep selected text                     ║
+║  \fb          Buffers (jump to tab)                  ║
+║  \fr          Recent files (new tab)                 ║
+║  \fs          Document symbols (outline)             ║
+║  Ctrl-j       Preview scroll down                    ║
+║  Ctrl-k       Preview scroll up                      ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║
-║  Shift-<   Previous tab                              ║
-║  Shift->   Next tab                                  ║
-║  Tab v     Vertical split                            ║
-║  Tab s     Horizontal split                          ║
-║  Tab-Arrow Switch pane                               ║
-║  Tab m     Maximize current pane                     ║
-║  Tab `     Restore equal size                        ║
+║  Alt-,        Previous tab                           ║
+║  Alt-.        Next tab                               ║
+║  Tab v        Vertical split                         ║
+║  Tab s        Horizontal split                       ║
+║  Tab Arrow    Switch pane                            ║
+║  Tab m        Maximize pane                          ║
+║  Tab `        Restore equal size                     ║
+║  \q           Close current tab                      ║
 ║                                                      ║
 ║  ===== Nvim - Other =====                            ║
-║  F2        Show this cheatsheet                      ║
-║  F3        Toggle NvimTree                           ║
-║  F4        Toggle Tagbar                             ║
-║  `         Save (:w)                                 ║
-║  \`        Close window (:q)                         ║
+║  F2           Toggle cheatsheet                      ║
+║  F3           Toggle NvimTree                        ║
+║  F4           Toggle Tagbar                          ║
+║  `            Save (:w)                              ║
+║  \`           Close window (:q)                      ║
 ║                                                      ║
 ║  ===== Nvim - Git =====                              ║
-║  \gl       Git blame (Enter: diff in tab, \q close)  ║
-║  \gd       Side-by-side diff (new tab, \q to close)  ║
-║  \q        Close current tab                         ║
+║  \gl          Git blame (Enter: diff, q: close)      ║
+║  \gd          Side-by-side diff (new tab)            ║
 ║                                                      ║
 ║  ===== Tmux (prefix: Ctrl-l) =====                   ║
-║  Ctrl-l c       New window                           ║
-║  Ctrl-l "       Horizontal split pane                ║
-║  Ctrl-l %       Vertical split pane                  ║
-║  Ctrl-l n       Next window                          ║
-║  Ctrl-l p       Previous window                      ║
-║  Ctrl-l d       Detach session                       ║
-║  Ctrl-l x       Close pane                           ║
-║  Ctrl-l r       Reload tmux.conf                     ║
-║  Ctrl-l m       Mouse ON                             ║
-║  Ctrl-l M       Mouse OFF                            ║
-║  Alt-Left       Previous window                      ║
-║  Alt-Right      Next window                          ║
-║  Shift-Arrow    Switch pane                          ║
-║  Alt-Up         Enter copy mode                      ║
-║  Alt-Down       Choose session                       ║
+║  Ctrl-l c     New window                             ║
+║  Ctrl-l "     Horizontal split                       ║
+║  Ctrl-l %     Vertical split                         ║
+║  Ctrl-l n     Next window                            ║
+║  Ctrl-l p     Previous window                        ║
+║  Ctrl-l d     Detach session                         ║
+║  Ctrl-l x     Close pane                             ║
+║  Ctrl-l r     Reload config                          ║
+║  Ctrl-l m     Mouse ON                               ║
+║  Ctrl-l M     Mouse OFF                              ║
+║  Alt-Left     Previous window                        ║
+║  Alt-Right    Next window                            ║
+║  Shift-Arrow  Switch pane                            ║
+║  Alt-Up       Enter copy mode                        ║
+║  Alt-Down     Choose session                         ║
 ║                                                      ║
 ╚══════════════════════════════════════════════════════╝

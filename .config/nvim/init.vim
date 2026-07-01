@@ -19,6 +19,7 @@ Plug 'nvim-tree/nvim-tree.lua'
 Plug 'nvim-tree/nvim-web-devicons'
 Plug 'tpope/vim-fugitive'
 Plug 'lewis6991/gitsigns.nvim'
+Plug 'ryanoasis/vim-devicons'
 call plug#end()
 
 " --- IDE keybindings ---
@@ -30,8 +31,8 @@ hi link CocSemInactive Comment
 " Tab for completion
 inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 
-nnoremap < :tabp<CR>
-nnoremap > :tabn<CR>
+nnoremap <M-,> :tabp<CR>
+nnoremap <M-.> :tabn<CR>
 lua << NAVSTACK
 -- Custom navigation stack (push on jump, pop on q)
 _G._nav_stack = {}
@@ -354,6 +355,30 @@ function cheatsheet.toggle()
     style = 'minimal',
     border = 'rounded',
   })
+
+  -- Apply syntax highlighting via syntax rules (works in floating windows)
+  vim.cmd('setlocal syntax=cheatsheet')
+  vim.cmd('highlight CheatKey ctermfg=75 guifg=#5fafff cterm=bold gui=bold')
+  vim.cmd('highlight CheatTitle ctermfg=113 guifg=#87d787 cterm=bold gui=bold')
+  vim.cmd([[syntax match CheatTitle /=====.\+=====/ contained]])
+  vim.cmd([[syntax match CheatKey /║\s\s\zs\S.\{-}\ze\s\s/]])
+  vim.cmd([[syntax match CheatTitleLine /^║.*=====.*║$/ contains=CheatTitle]])
+
+  -- Block all keys except cursor movement, q, F2, Esc
+  local blocked = 'abcdefghijlmnoprstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+  for c in blocked:gmatch('.') do
+    vim.api.nvim_buf_set_keymap(buf, 'n', c, '<Nop>', {noremap=true, silent=true})
+  end
+  local blocked_special = {'<CR>', '<Space>', '<Tab>', '<BS>', '<Del>',
+    '<C-j>', '<C-k>', '<C-l>', '<C-h>', '<C-d>', '<C-u>', '<C-f>', '<C-b>',
+    '<M-,>', '<M-.>', '<F3>', '<F4>',
+    '<leader>ff', '<leader>fg', '<leader>fb', '<leader>fr', '<leader>fs',
+    '<leader>d', '<leader>rn', '<leader>fm', '<leader>gl', '<leader>gd', '<leader>q',
+    'ss', 'sw', 'sd', 'si', 'w'}
+  for _, key in ipairs(blocked_special) do
+    vim.api.nvim_buf_set_keymap(buf, 'n', key, '<Nop>', {noremap=true, silent=true})
+  end
+
   vim.api.nvim_buf_set_keymap(buf, 'n', '<F2>', ':lua require("cheatsheet").toggle()<CR>', {noremap=true, silent=true})
   vim.api.nvim_buf_set_keymap(buf, 'n', 'q', ':lua require("cheatsheet").toggle()<CR>', {noremap=true, silent=true})
   vim.api.nvim_buf_set_keymap(buf, 'n', '<Esc>', ':lua require("cheatsheet").toggle()<CR>', {noremap=true, silent=true})
@@ -434,6 +459,56 @@ require('telescope').setup{
       mappings = {
         i = { ["<CR>"] = open_in_new_tab },
         n = { ["<CR>"] = open_in_new_tab },
+      },
+    },
+    oldfiles = {
+      mappings = {
+        i = { ["<CR>"] = open_in_new_tab },
+        n = { ["<CR>"] = open_in_new_tab },
+      },
+    },
+    buffers = {
+      mappings = {
+        i = { ["<CR>"] = function(prompt_bufnr)
+          local entry = action_state.get_selected_entry()
+          if not entry then return end
+          local bufnr_selected = entry.bufnr
+          actions.close(prompt_bufnr)
+          vim.schedule(function()
+            -- Find which tab already has this buffer and switch to it
+            for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
+              for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+                if vim.api.nvim_win_get_buf(win) == bufnr_selected then
+                  vim.api.nvim_set_current_tabpage(tabpage)
+                  vim.api.nvim_set_current_win(win)
+                  return
+                end
+              end
+            end
+            -- If not found in any tab, open in new tab
+            vim.cmd('tabedit')
+            vim.api.nvim_set_current_buf(bufnr_selected)
+          end)
+        end },
+        n = { ["<CR>"] = function(prompt_bufnr)
+          local entry = action_state.get_selected_entry()
+          if not entry then return end
+          local bufnr_selected = entry.bufnr
+          actions.close(prompt_bufnr)
+          vim.schedule(function()
+            for _, tabpage in ipairs(vim.api.nvim_list_tabpages()) do
+              for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tabpage)) do
+                if vim.api.nvim_win_get_buf(win) == bufnr_selected then
+                  vim.api.nvim_set_current_tabpage(tabpage)
+                  vim.api.nvim_set_current_win(win)
+                  return
+                end
+              end
+            end
+            vim.cmd('tabedit')
+            vim.api.nvim_set_current_buf(bufnr_selected)
+          end)
+        end },
       },
     },
   },
@@ -1089,3 +1164,4 @@ GITSIGNS
 
 " cursorline (only enabled during blame)
 set nocursorline
+
