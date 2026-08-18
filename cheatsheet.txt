@@ -31,8 +31,8 @@
 ║  Ctrl-k       Preview scroll up                      ║
 ║                                                      ║
 ║  ===== Nvim - Window / Tab =====                     ║
-║  Alt-,        Previous tab                           ║
-║  Alt-.        Next tab                               ║
+║  Alt-PageUp   Previous tab                           ║
+║  Alt-PageDown Next tab                               ║
 ║  Tab v        Vertical split                         ║
 ║  Tab s        Horizontal split                       ║
 ║  Tab Arrow    Switch pane                            ║

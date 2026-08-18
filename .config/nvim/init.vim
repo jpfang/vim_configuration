@@ -31,8 +31,8 @@ hi link CocSemInactive Comment
 " Tab for completion
 inoremap <silent><expr> <Tab> coc#pum#visible() ? coc#pum#confirm() : "\<Tab>"
 
-nnoremap <M-,> :tabp<CR>
-nnoremap <M-.> :tabn<CR>
+nnoremap <M-PageUp> :tabp<CR>
+nnoremap <M-PageDown> :tabn<CR>
 lua << NAVSTACK
 -- Custom navigation stack (push on jump, pop on q)
 _G._nav_stack = {}
